@@ -3,86 +3,320 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sohaib pro</title>
+  <title>Sohaib Pro</title>
   <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; background-color: #0b132b; color: #ffffff; font-family: system-ui, -apple-system, sans-serif; padding: 15px; }
-    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1c2541; padding-bottom: 10px; }
-    h1 { color: #48cae4; margin: 0; font-size: 24px; }
-    nav button { background-color: #1c2541; color: #fff; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 14px; }
-    nav button.active { background-color: #00b4d8; }
-    .card { background-color: #1c2541; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 12px; }
-    .card p { margin: 0; color: #a0aec0; font-size: 14px; }
-    .card h2 { margin: 5px 0 0 0; font-size: 22px; }
-    .client-item { background-color: #1c2541; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .client-name { font-weight: bold; font-size: 16px; margin: 0; }
-    .client-phone { color: #a0aec0; font-size: 12px; display: block; }
-    .badge-red { color: #e53e3e; font-weight: bold; }
-    .badge-green { color: #38a169; font-weight: bold; }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { margin: 0; background-color: #0b132b; color: #ffffff; padding: 15px; padding-bottom: 80px; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1c2541; padding-bottom: 10px; margin-bottom: 15px; }
+    h1 { color: #48cae4; margin: 0; font-size: 22px; }
+    
+    /* Navigation */
+    nav { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
+    nav button { background-color: #1c2541; color: #a0aec0; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; whitespace: nowrap; }
+    nav button.active { background-color: #00b4d8; color: #fff; font-weight: bold; }
+
+    /* Cards & Modules */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .card { background-color: #1c2541; padding: 12px; border-radius: 8px; border: 1px solid #2a385b; }
+    .card p { margin: 0; color: #a0aec0; font-size: 12px; }
+    .card h2 { margin: 5px 0 0 0; font-size: 18px; }
+    
+    .urgent-bar { background-color: #7209b7; border-right: 4px solid #f72585; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px; }
+    
+    /* Lists & Items */
+    .item-card { background-color: #1c2541; padding: 12px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid #a0aec0; }
+    .item-card.credit { border-color: #7209b7; } /* له - أرجواني */
+    .item-card.debit { border-color: #00b4d8; }  /* عليه - أزرق */
+    .item-card.late { border-color: #e53e3e; }   /* متأخر - أحمر */
+
+    .badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+    .bg-green { background-color: #27272a; color: #38a169; }
+    .bg-blue { background-color: #27272a; color: #00b4d8; }
+    .bg-red { background-color: #27272a; color: #e53e3e; }
+
+    /* Form Inputs & Buttons */
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 10px; background-color: #0b132b; border: 1px solid #2a385b; color: #fff; border-radius: 6px; font-size: 13px; }
+    .btn { background-color: #00b4d8; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; }
+    .btn-danger { background-color: #e53e3e; }
+    .btn-wa { background-color: #25d366; color: #fff; }
+    .btn-sm { width: auto; padding: 4px 8px; font-size: 11px; }
+
     .hidden { display: none; }
   </style>
 </head>
 <body>
 
   <header>
-    <h1>Sohaib pro</h1>
-    <nav>
-      <button id="btn-home" class="active" onclick="switchTab('home')">الرئيسية</button>
-      <button id="btn-clients" onclick="switchTab('clients')">العملاء</button>
-    </nav>
+    <h1>Sohaib Pro</h1>
+    <span style="font-size: 11px; color: #a0aec0;">محلات الدشيمي</span>
   </header>
 
-  <!-- تبويب الرئيسية -->
-  <main id="tab-home" style="margin-top: 20px;">
-    <div class="card">
-      <p>صافي المستحق الإجمالي</p>
-      <h2 style="color: #48cae4;" id="net-total">6.75 ر.ي</h2>
-    </div>
-    <div class="card">
-      <p>إجمالي الديون (عليه)</p>
-      <h2 style="color: #e53e3e;" id="total-debt">12.40 ر.ي</h2>
-    </div>
-    <div class="card">
-      <p>إجمالي الدائنين (له)</p>
-      <h2 style="color: #38a169;" id="total-credit">5.65 ر.ي</h2>
-    </div>
-  </main>
+  <!-- القائمة السفلية/العلوية للتنقل -->
+  <nav>
+    <button id="btn-home" class="active" onclick="showTab('home')">الرئيسية</button>
+    <button id="btn-clients" onclick="showTab('clients')">العملاء</button>
+    <button id="btn-vouchers" onclick="showTab('vouchers')">السندات</button>
+    <button id="btn-reminders" onclick="showTab('reminders')">التذكيرات</button>
+    <button id="btn-reports" onclick="showTab('reports')">التقارير والإعدادات</button>
+  </nav>
 
-  <!-- تبويب العملاء -->
-  <main id="tab-clients" class="hidden" style="margin-top: 20px;">
-    <h3>قائمة العملاء (2)</h3>
-    <div class="client-item">
-      <div>
-        <p class="client-name">زيادة وعجز الصندوق</p>
-        <span class="client-phone">بدون رقم</span>
-      </div>
-      <span class="badge-green">5.65 ر.ي (له)</span>
+  <br>
+
+  <!-- 1. الشاشة الرئيسية -->
+  <div id="tab-home">
+    <div class="urgent-bar">
+      🚨 <strong>تذكير عاجل:</strong> توجد ديون متأخرة الموعد تستحق التحصيل اليوم!
     </div>
-    <div class="client-item">
-      <div>
-        <p class="client-name">عمر العميسي</p>
-        <span class="client-phone">967770000000</span>
+
+    <div class="grid-2">
+      <div class="card">
+        <p>نسبة التحصيل</p>
+        <h2 style="color: #38a169;">100%</h2>
       </div>
-      <span class="badge-red">12.40 ر.ي (عليه)</span>
+      <div class="card">
+        <p>صافي الإجمالي</p>
+        <h2 style="color: #48cae4;" id="net-total">0.00 ر.ي</h2>
+      </div>
+      <div class="card">
+        <p>عليه (لك)</p>
+        <h2 style="color: #00b4d8;" id="total-debit">0.00 ر.ي</h2>
+      </div>
+      <div class="card">
+        <p>له (عليك)</p>
+        <h2 style="color: #7209b7;" id="total-credit">0.00 ر.ي</h2>
+      </div>
     </div>
-  </main>
+
+    <h3>آخر الحركات (السندات)</h3>
+    <div id="recent-vouchers-list"></div>
+  </div>
+
+  <!-- 2. إدارة العملاء -->
+  <div id="tab-clients" class="hidden">
+    <input type="text" id="client-search" placeholder="بحث باسم العميل أو رقم الهاتف..." onkeyup="renderClients()">
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+      <button class="btn btn-sm" onclick="filterClientStatus('all')">الكل</button>
+      <button class="btn btn-sm" onclick="filterClientStatus('active')">نشط</button>
+      <button class="btn btn-sm" onclick="filterClientStatus('stopped')">متوقف</button>
+    </div>
+
+    <div class="card" style="margin-bottom: 15px;">
+      <p>إضافة عميل جديد</p>
+      <input type="text" id="new-client-name" placeholder="اسم العميل">
+      <input type="text" id="new-client-phone" placeholder="رقم الهاتف (967...)">
+      <button class="btn" onclick="addClient()">حفظ العميل</button>
+    </div>
+
+    <div id="clients-list"></div>
+  </div>
+
+  <!-- 3. قسم السندات -->
+  <div id="tab-vouchers" class="hidden">
+    <div class="card" style="margin-bottom: 15px;">
+      <p>إصدار سند جديد</p>
+      <select id="voucher-client-id"></select>
+      <select id="voucher-type">
+        <option value="receipt">سند قبض (+ سداد)</option>
+        <option value="payment">سند صرف (- دين جديد)</option>
+      </select>
+      <input type="number" id="voucher-amount" placeholder="المبلغ بالريال اليمني">
+      <input type="text" id="voucher-note" placeholder="البيان / السبب">
+      <button class="btn" onclick="addVoucher()">تسجيل السند</button>
+    </div>
+
+    <h3>سجل السندات</h3>
+    <div id="vouchers-list"></div>
+  </div>
+
+  <!-- 4. نظام التذكيرات والواتساب -->
+  <div id="tab-reminders" class="hidden">
+    <div class="card" style="margin-bottom: 15px;">
+      <p>إعدادات التذكير الآلي</p>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+        <span style="font-size:13px;">تفعيل التذكير اليومي (9:00 صباحاً)</span>
+        <input type="checkbox" style="width:auto; margin:0;">
+      </div>
+    </div>
+
+    <h3>قائمة المديونيات المستحقة</h3>
+    <div id="reminders-list"></div>
+  </div>
+
+  <!-- 5. التقارير والنسخ الاحتياطي -->
+  <div id="tab-reports" class="hidden">
+    <div class="card" style="margin-bottom: 15px;">
+      <p>تخصيص الهوية والتقرير</p>
+      <input type="text" value="محلات الدشيمي للتجارة العامة" placeholder="العنوان الرئيسي">
+      <input type="text" value="كشف حساب بالريال اليمني" placeholder="النص الجانبي">
+      <button class="btn" onclick="alert('تم حفظ إعدادات الهوية!')">حفظ الهوية</button>
+    </div>
+
+    <div class="card" style="margin-bottom: 15px;">
+      <p>النسخ الاحتياطي (JSON)</p>
+      <br>
+      <button class="btn" onclick="exportData()">تصدير نسخة احتياطية</button>
+      <br><br>
+      <button class="btn btn-danger" onclick="importData()">استعادة بيانات</button>
+    </div>
+  </div>
 
   <script>
-    function switchTab(tabName) {
-      document.getElementById('tab-home').classList.add('hidden');
-      document.getElementById('tab-clients').classList.add('hidden');
-      document.getElementById('btn-home').classList.remove('active');
-      document.getElementById('btn-clients').classList.remove('active');
+    // 1. قاعدة البيانات والذاكرة المحلية
+    let db = {
+      clients: JSON.parse(localStorage.getItem('pro_clients')) || [
+        { id: '1', name: 'زيادة وعجز الصندوق', phone: '', balance: -5.65, status: 'active' },
+        { id: '2', name: 'عمر العميسي', phone: '967770000000', balance: 12.40, status: 'active' }
+      ],
+      vouchers: JSON.parse(localStorage.getItem('pro_vouchers')) || [],
+      clientFilter: 'all'
+    };
 
-      if (tabName === 'home') {
-        document.getElementById('tab-home').classList.remove('hidden');
-        document.getElementById('btn-home').classList.add('active');
-      } else {
-        document.getElementById('tab-clients').classList.remove('hidden');
-        document.getElementById('btn-clients').classList.add('active');
+    function saveData() {
+      localStorage.setItem('pro_clients', JSON.stringify(db.clients));
+      localStorage.setItem('pro_vouchers', JSON.stringify(db.vouchers));
+      refreshUI();
+    }
+
+    // 2. التنقل بين التبويبات
+    function showTab(tabId) {
+      ['home', 'clients', 'vouchers', 'reminders', 'reports'].forEach(t => {
+        document.getElementById('tab-' + t).classList.add('hidden');
+        document.getElementById('btn-' + t).classList.remove('active');
+      });
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+      document.getElementById('btn-' + tabId).classList.add('active');
+    }
+
+    // 3. إضافة عميل
+    function addClient() {
+      const name = document.getElementById('new-client-name').value;
+      const phone = document.getElementById('new-client-phone').value;
+      if (!name) return alert('يرجى إدخال اسم العميل');
+
+      db.clients.push({ id: Date.now().toString(), name, phone, balance: 0, status: 'active' });
+      document.getElementById('new-client-name').value = '';
+      document.getElementById('new-client-phone').value = '';
+      saveData();
+    }
+
+    // 4. إضافة سند
+    function addVoucher() {
+      const clientId = document.getElementById('voucher-client-id').value;
+      const type = document.getElementById('voucher-type').value;
+      const amount = parseFloat(document.getElementById('voucher-amount').value);
+      const note = document.getElementById('voucher-note').value;
+
+      if (!clientId || isNaN(amount) || amount <= 0) return alert('يرجى التأكد من البيانات الرقمية السليمة');
+
+      const client = db.clients.find(c => c.id === clientId);
+      if (type === 'receipt') client.balance -= amount; // قبض (سداد) ينقص الدين
+      else client.balance += amount; // صرف (دين جديد) يزيد الدين
+
+      db.vouchers.unshift({ id: Date.now().toString(), clientId, clientName: client.name, type, amount, note, date: new Date().toLocaleDateString('ar-YE') });
+      document.getElementById('voucher-amount').value = '';
+      document.getElementById('voucher-note').value = '';
+      saveData();
+    }
+
+    // 5. واتساب مباشر
+    function sendWA(phone, clientName, amount, balance) {
+      if(!phone) return alert('لا يوجد رقم هاتف لهذا العميل!');
+      const msg = `مرحباً ${clientName}، ننحيكم علماً أنه تم تسجيل حركة ماليّة بمبلغ ${amount} ر.ي. إجمالي رصيدكم المتبقي: ${Math.abs(balance)} ر.ي. محلات الدشيمي`;
+      window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // 6. تحديث الواجهات
+    function refreshUI() {
+      // الحسابات
+      let debit = 0, credit = 0;
+      db.clients.forEach(c => {
+        if (c.balance > 0) debit += c.balance;
+        else credit += Math.abs(c.balance);
+      });
+      document.getElementById('total-debit').innerText = debit.toFixed(2) + ' ر.ي';
+      document.getElementById('total-credit').innerText = credit.toFixed(2) + ' ر.ي';
+      document.getElementById('net-total').innerText = (debit - credit).toFixed(2) + ' ر.ي';
+
+      // قائمة خيارات السندات
+      const select = document.getElementById('voucher-client-id');
+      select.innerHTML = '<option value="">اختر العميل...</option>';
+      db.clients.forEach(c => select.innerHTML += `<option value="${c.id}">${c.name}</option>`);
+
+      renderClients();
+      renderVouchers();
+    }
+
+    function renderClients() {
+      const container = document.getElementById('clients-list');
+      const search = document.getElementById('client-search').value.toLowerCase();
+      container.innerHTML = '';
+
+      db.clients.filter(c => c.name.toLowerCase().includes(search) || c.phone.includes(search)).forEach(c => {
+        const typeClass = c.balance > 0 ? 'debit' : c.balance < 0 ? 'credit' : '';
+        const badgeClass = c.balance > 0 ? 'bg-blue' : c.balance < 0 ? 'bg-green' : '';
+        const label = c.balance > 0 ? 'عليه' : c.balance < 0 ? 'له' : 'خالي';
+
+        container.innerHTML += `
+          <div class="item-card ${typeClass}">
+            <div>
+              <strong>${c.name}</strong>
+              <small style="display:block; color:#a0aec0;">${c.phone || 'بدون رقم'}</small>
+            </div>
+            <div style="text-align:left;">
+              <span class="badge ${badgeClass}">${Math.abs(c.balance).toFixed(2)} ر.ي (${label})</span>
+              <div style="margin-top:5px;">
+                <button class="btn btn-sm btn-danger" onclick="deleteClient('${c.id}')">🗑️</button>
+              </div>
+            </div>
+          </div>`;
+      });
+    }
+
+    function renderVouchers() {
+      const container = document.getElementById('vouchers-list');
+      const recentContainer = document.getElementById('recent-vouchers-list');
+      container.innerHTML = '';
+      recentContainer.innerHTML = '';
+
+      db.vouchers.forEach((v, index) => {
+        const html = `
+          <div class="item-card">
+            <div>
+              <strong>${v.clientName}</strong> - <small>${v.note || 'بدون بيان'}</small>
+              <small style="display:block; color:#a0aec0;">${v.date}</small>
+            </div>
+            <div>
+              <span class="badge ${v.type==='receipt'?'bg-green':'bg-red'}">${v.type==='receipt'?'+':'-'} ${v.amount} ر.ي</span>
+            </div>
+          </div>`;
+        container.innerHTML += html;
+        if(index < 5) recentContainer.innerHTML += html;
+      });
+    }
+
+    function deleteClient(id) {
+      if(confirm('هل أنت تأكد من إزالة هذا العميل؟')) {
+        db.clients = db.clients.filter(c => c.id !== id);
+        saveData();
       }
     }
-  </script>
 
+    function exportData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
+      const dlAnchorElem = document.createElement('a');
+      dlAnchorElem.setAttribute("href", dataStr);
+      dlAnchorElem.setAttribute("download", "SohaibPro_Backup.json");
+      dlAnchorElem.click();
+    }
+
+    function importData() {
+      alert('يرجى اختيار ملف JSON النسخة الاحتياطية استعادة البيانات');
+    }
+
+    // التشغيل الأول
+    refreshUI();
+  </script>
 </body>
 </html>
