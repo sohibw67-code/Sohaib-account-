@@ -4,6 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sohaib Pro</title>
+
+  <!-- إعدادات تحويل الصفحة إلى تطبيق للهواتف (PWA) -->
+  <meta name="theme-color" content="#0b132b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Sohaib Pro">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2362/2362372.png">
+
+  <!-- Manifest لتنسيق الأيقونة والشاشة المستقلة -->
+  <link rel="manifest" href='data:application/manifest+json,{"name":"Sohaib Pro","short_name":"SohaibPro","start_url":".","display":"standalone","background_color":"#0b132b","theme_color":"#0b132b","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2362/2362372.png","sizes":"512x512","type":"image/png"}]}'>
+
   <style>
     :root {
       --bg-color: #0b132b;
@@ -28,7 +40,7 @@
     }
 
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.2s, color 0.2s; }
-    body { margin: 0; background-color: var(--bg-color); color: var(--text-color); padding: 15px; padding-bottom: 80px; }
+    body { margin: 0; background-color: var(--bg-color); color: var(--text-color); padding: 15px; padding-bottom: 80px; user-select: none; }
     header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--header-border); padding-bottom: 10px; margin-bottom: 15px; }
     .brand-header { display: flex; align-items: center; gap: 10px; }
     .brand-header img { max-height: 40px; border-radius: 4px; display: none; }
@@ -72,9 +84,14 @@
     th, td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
     th { background: var(--th-bg); color: #48cae4; }
 
+    /* تنبيه للتثبيت على الهاتف */
+    #install-banner {
+      background: #00b4d8; color: #fff; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: bold;
+    }
+
     @media print {
       body { background-color: #fff !important; color: #000 !important; padding: 0; }
-      nav, header button, .btn, input, select, textarea, #tab-home, #tab-clients, #tab-vouchers, #tab-overdue, #tab-templates, #tab-settings { display: none !important; }
+      nav, header button, .btn, input, select, textarea, #tab-home, #tab-clients, #tab-vouchers, #tab-overdue, #tab-templates, #tab-settings, #install-banner { display: none !important; }
       #tab-reports { display: block !important; }
       .card { background-color: #fff !important; border: 1px solid #ccc !important; color: #000 !important; }
       table { border-color: #000 !important; }
@@ -86,6 +103,12 @@
   </style>
 </head>
 <body>
+
+  <!-- شريط تثبيت التطبيق إذا كان متاحاً -->
+  <div id="install-banner" class="hidden">
+    <span>📲 احصل على تطبيق Sohaib Pro على شاشتك</span>
+    <button class="btn btn-sm btn-secondary" onclick="installApp()">تثبيت التطبيق</button>
+  </div>
 
   <header>
     <div class="brand-header">
@@ -339,9 +362,7 @@
 
     function authenticate() {
       const pin = prompt('يرجى إدخال رمز الأمان لإتمام العملية:');
-      if (pin === SECURITY_PIN) {
-        return true;
-      }
+      if (pin === SECURITY_PIN) return true;
       alert('رمز الأمان غير صحيح!');
       return false;
     }
@@ -556,8 +577,6 @@
 
       saveData();
       sendVoucherWA(newVoucherId);
-
-      // فتح سند جديد تلقائياً وتصفية الحقول
       resetVoucherForm();
     }
 
@@ -609,7 +628,6 @@
 
       let tpl = v.type === 'receipt' ? db.templates.receipt : db.templates.payment;
       
-      // إصلاح استبدال بيان السند {note}
       let msg = tpl
         .replace(/{name}/g, client.name)
         .replace(/{amount}/g, v.amount)
@@ -775,7 +793,6 @@
       });
     }
 
-    // تعديل الفلترة لنقل العملاء المتأخرين تلقائياً إذا تجاوز تاريخ سدادهم اليوم الحالي
     function renderOverdue() {
       const container = document.getElementById('overdue-list');
       const search = document.getElementById('overdue-search').value.toLowerCase();
@@ -784,7 +801,6 @@
 
       container.innerHTML = '';
 
-      // نقل وتصفية العملاء الذين عليهم رصيد مستحق وتاريخ السداد الخاص بهم أصغر من أو يساوي اليوم الحالي
       let overdueClients = db.clients.filter(c => c.balance > 0 && c.dueDate && c.dueDate <= today && c.name.toLowerCase().includes(search));
 
       if (sort === 'amount') overdueClients.sort((a, b) => b.balance - a.balance);
@@ -883,6 +899,26 @@
         }
       };
       reader.readAsText(file);
+    }
+
+    // إدارة تثبيت التطبيق على الشاشة
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('install-banner').classList.remove('hidden');
+    });
+
+    function installApp() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            document.getElementById('install-banner').classList.add('hidden');
+          }
+          deferredPrompt = null;
+        });
+      }
     }
 
     refreshUI();
