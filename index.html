@@ -8,6 +8,8 @@
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     body { margin: 0; background-color: #0b132b; color: #ffffff; padding: 15px; padding-bottom: 80px; }
     header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1c2541; padding-bottom: 10px; margin-bottom: 15px; }
+    .brand-header { display: flex; align-items: center; gap: 10px; }
+    .brand-header img { max-height: 40px; border-radius: 4px; display: none; }
     h1 { color: #48cae4; margin: 0; font-size: 20px; }
     
     nav { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
@@ -41,14 +43,30 @@
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
     th, td { border: 1px solid #2a385b; padding: 8px; text-align: center; }
     th { background: #0b132b; color: #48cae4; }
+
+    /* تنسيق الطباعة وتقارير PDF */
+    @media print {
+      body { background-color: #fff !important; color: #000 !important; padding: 0; }
+      nav, header button, .btn, input, select, textarea, #tab-home, #tab-clients, #tab-vouchers, #tab-templates, #tab-settings { display: none !important; }
+      #tab-reports { display: block !important; }
+      .card { background-color: #fff !important; border: 1px solid #ccc !important; color: #000 !important; }
+      table { border-color: #000 !important; }
+      th, td { border-color: #000 !important; color: #000 !important; }
+      th { background-color: #f0f0f0 !important; }
+      .print-header { display: flex !important; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+      .print-header img { max-height: 60px; }
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <div>
-      <h1>Sohaib Pro</h1>
-      <span style="font-size: 11px; color: #a0aec0;">محلات الدشيمي</span>
+    <div class="brand-header">
+      <img id="header-logo" src="" alt="لوجو">
+      <div>
+        <h1 id="header-store-name">Sohaib Pro</h1>
+        <span id="header-subtitle" style="font-size: 11px; color: #a0aec0;">محلات الدشيمي</span>
+      </div>
     </div>
     <button class="btn btn-sm" style="background:#00b4d8;" onclick="showTab('vouchers')">➕ سند جديد</button>
   </header>
@@ -57,8 +75,8 @@
     <button id="btn-home" class="active" onclick="showTab('home')">الرئيسية</button>
     <button id="btn-clients" onclick="showTab('clients')">العملاء</button>
     <button id="btn-vouchers" onclick="showTab('vouchers')">السندات</button>
-    <button id="btn-reports" onclick="showTab('reports')">التقارير</button>
-    <button id="btn-templates" onclick="showTab('templates')">قوالب الرسائل</button>
+    <button id="btn-reports" onclick="showTab('reports')">التقارير PDF</button>
+    <button id="btn-templates" onclick="showTab('templates')">الإعدادات والقوالب</button>
     <button id="btn-settings" onclick="showTab('settings')">النسخ والاستعادة</button>
   </nav>
 
@@ -111,48 +129,65 @@
         <option value="payment">سند صرف (- دَين جديد)</option>
       </select>
       <input type="number" id="voucher-amount" placeholder="المبلغ بالريال اليمني">
-      <input type="text" id="voucher-note" placeholder="البيان / السبب">
-      <button class="btn" id="btn-save-voucher" onclick="saveVoucher()">تسجيل السند</button>
+      <input type="text" id="voucher-note" placeholder="البيان / السبب (سيظهر بالرسالة)">
+      <button class="btn" id="btn-save-voucher" onclick="saveVoucher()">تسجيل السند وإرسال واتساب فوراً</button>
     </div>
 
     <h3>سجل السندات</h3>
     <div id="vouchers-list"></div>
   </div>
 
-  <!-- 4. التقارير -->
+  <!-- 4. التقارير المنظمة للطباعة و PDF -->
   <div id="tab-reports" class="hidden">
-    <h3>تقارير الحسابات</h3>
+    <div class="print-header hidden">
+      <div>
+        <h2 id="print-store-name" style="margin:0;">محلات الدشيمي</h2>
+        <span id="print-subtitle" style="font-size:12px;">كشف حساب مالي منظّم</span>
+      </div>
+      <img id="print-logo" src="" alt="Logo">
+    </div>
+
+    <h3>تقارير الحسابات الرسمية</h3>
     <div class="card" style="margin-bottom: 15px;">
-      <p>عرض كشف حساب تفصيلي لعميل</p>
+      <p>عرض وتصدير كشف حساب تفصيلي لعميل</p>
       <select id="report-client-select"></select>
       <button class="btn" onclick="openClientStatement(document.getElementById('report-client-select').value)">عرض كشف الحساب</button>
     </div>
 
     <div class="card">
-      <p>كشف الأرصدة الإجمالي</p>
+      <p>كشف الأرصدة الإجمالي كافة العملاء</p>
       <br>
-      <button class="btn btn-sm" onclick="window.print()">🖨️ طباعة كشف كافة العملاء</button>
+      <button class="btn btn-sm" onclick="window.print()">🖨️ طباعة / تصدير PDF</button>
       <div id="all-clients-report" style="margin-top: 15px;"></div>
     </div>
   </div>
 
-  <!-- 5. قوالب الرسائل -->
+  <!-- 5. الهوية والإعدادات والقوالب -->
   <div id="tab-templates" class="hidden">
+    <div class="card" style="margin-bottom: 15px;">
+      <p>شعار واسم المحل (للطباعة والتقارير)</p>
+      <input type="text" id="setting-store-name" placeholder="اسم المحل الرئيسي">
+      <input type="text" id="setting-subtitle" placeholder="النص الفرعي (مثال: للتجارة العامة)">
+      <p style="font-size:11px; color:#a0aec0;">رفع اللوقو / الشعار:</p>
+      <input type="file" id="setting-logo-input" accept="image/*" onchange="handleLogoUpload(event)">
+      <button class="btn" style="margin-top:5px;" onclick="saveStoreSettings()">حفظ بيانات الهوية</button>
+    </div>
+
     <h3>محرر قوالب الرسائل</h3>
-    <p style="font-size:12px; color:#a0aec0;">يمكنك استخدام المتغيرات التالية: {name} للعميل، {amount} للمبلغ، {balance} للرصيد، {date} للتاريخ.</p>
+    <p style="font-size:12px; color:#a0aec0;">المتغيرات المدعومة: {name}، {amount}، {balance}، {date}، {note}</p>
 
     <div class="card" style="margin-bottom: 10px;">
-      <p>قالب رسالة سند القبض (سداد):</p>
+      <p>قالب سند القبض (سداد):</p>
       <textarea id="tpl-receipt" rows="3"></textarea>
     </div>
 
     <div class="card" style="margin-bottom: 10px;">
-      <p>قالب رسالة سند الصرف (دين جديد):</p>
+      <p>قالب سند الصرف (دين جديد):</p>
       <textarea id="tpl-payment" rows="3"></textarea>
     </div>
 
     <div class="card" style="margin-bottom: 10px;">
-      <p>قالب رسالة التذكير العام بالدين:</p>
+      <p>قالب التذكير العام بالدين:</p>
       <textarea id="tpl-reminder" rows="3"></textarea>
     </div>
 
@@ -196,7 +231,10 @@
       </table>
 
       <br>
-      <button class="btn btn-wa" id="modal-wa-btn">📱 إرسال تذكير بالحساب عبر واتساب</button>
+      <div style="display:flex; gap:5px;">
+        <button class="btn btn-wa" id="modal-wa-btn">📱 إرسال تذكير بالحساب</button>
+        <button class="btn" onclick="window.print()">🖨️ طباعة الكشف</button>
+      </div>
     </div>
   </div>
 
@@ -208,9 +246,14 @@
       ],
       vouchers: JSON.parse(localStorage.getItem('pro_vouchers')) || [],
       templates: JSON.parse(localStorage.getItem('pro_templates')) || {
-        receipt: "تم استلام مبلغ {amount} ر.ي من الأخ {name}. رصيدكم المتبقي: {balance} ر.ي بتاريخ {date}. محلات الدشيمي.",
-        payment: "تم تقييد مبلغ {amount} ر.ي لحساب الأخ {name}. رصيدكم الحالي: {balance} ر.ي بتاريخ {date}. محلات الدشيمي.",
-        reminder: "الأخ {name}، نود تذكيركم برصيد حسابكم المتبقي لدينا: {balance} ر.ي. محلات الدشيمي."
+        receipt: "تم استلام مبلغ {amount} ر.ي من الأخ {name}.\nالبيان: {note}\nرصيدكم المتبقي: {balance} ر.ي بتاريخ {date}.\nمحلات الدشيمي.",
+        payment: "تم تقييد مبلغ {amount} ر.ي لحساب الأخ {name}.\nالبيان: {note}\nرصيدكم الحالي: {balance} ر.ي بتاريخ {date}.\nمحلات الدشيمي.",
+        reminder: "الأخ {name}، نود تذكيركم برصيد حسابكم المتبقي لدينا: {balance} ر.ي.\nمحلات الدشيمي."
+      },
+      store: JSON.parse(localStorage.getItem('pro_store')) || {
+        name: "محلات الدشيمي للتجارة العامة",
+        subtitle: "كشف حساب مالي بالريال اليمني",
+        logo: ""
       }
     };
 
@@ -218,6 +261,7 @@
       localStorage.setItem('pro_clients', JSON.stringify(db.clients));
       localStorage.setItem('pro_vouchers', JSON.stringify(db.vouchers));
       localStorage.setItem('pro_templates', JSON.stringify(db.templates));
+      localStorage.setItem('pro_store', JSON.stringify(db.store));
       refreshUI();
     }
 
@@ -228,6 +272,39 @@
       });
       document.getElementById('tab-' + tabId).classList.remove('hidden');
       document.getElementById('btn-' + tabId).classList.add('active');
+    }
+
+    // إعدادات الشعار واسم المحل
+    function handleLogoUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        db.store.logo = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function saveStoreSettings() {
+      db.store.name = document.getElementById('setting-store-name').value || "محلات الدشيمي";
+      db.store.subtitle = document.getElementById('setting-subtitle').value || "";
+      saveData();
+      alert('تم حفظ بيانات الهوية بنجاح!');
+    }
+
+    function loadStoreSettings() {
+      document.getElementById('setting-store-name').value = db.store.name;
+      document.getElementById('setting-subtitle').value = db.store.subtitle;
+      document.getElementById('header-store-name').innerText = db.store.name;
+      document.getElementById('header-subtitle').innerText = db.store.subtitle;
+      document.getElementById('print-store-name').innerText = db.store.name;
+      document.getElementById('print-subtitle').innerText = db.store.subtitle;
+
+      if (db.store.logo) {
+        document.getElementById('header-logo').src = db.store.logo;
+        document.getElementById('header-logo').style.display = 'block';
+        document.getElementById('print-logo').src = db.store.logo;
+      }
     }
 
     // حفظ واستعادة القوالب
@@ -289,17 +366,18 @@
       }
     }
 
-    // إدارة السندات + حالة الإرسال
+    // إدارة السندات + الإرسال التلقائي
     function saveVoucher() {
       const id = document.getElementById('edit-voucher-id').value;
       const clientId = document.getElementById('voucher-client-id').value;
       const type = document.getElementById('voucher-type').value;
       const amount = parseFloat(document.getElementById('voucher-amount').value);
-      const note = document.getElementById('voucher-note').value;
+      const note = document.getElementById('voucher-note').value || 'بدون بيان';
 
       if (!clientId || isNaN(amount) || amount <= 0) return alert('يرجى تحديد العميل وإدخال مبلغ صحيح');
 
       const client = db.clients.find(c => c.id === clientId);
+      let newVoucherId;
 
       if (id) {
         const oldV = db.vouchers.find(v => v.id === id);
@@ -315,12 +393,14 @@
 
         if (type === 'receipt') client.balance -= amount;
         else client.balance += amount;
+        newVoucherId = id;
       } else {
         if (type === 'receipt') client.balance -= amount;
         else client.balance += amount;
 
+        newVoucherId = Date.now().toString();
         db.vouchers.unshift({
-          id: Date.now().toString(),
+          id: newVoucherId,
           clientId,
           clientName: client.name,
           type,
@@ -333,6 +413,9 @@
 
       resetVoucherForm();
       saveData();
+
+      // إرسال واتساب تلقائي فور الحفظ
+      sendVoucherWA(newVoucherId);
     }
 
     function editVoucher(id) {
@@ -344,7 +427,7 @@
       document.getElementById('voucher-note').value = v.note;
 
       document.getElementById('form-voucher-title').innerText = 'تعديل السند';
-      document.getElementById('btn-save-voucher').innerText = 'تحديث السند';
+      document.getElementById('btn-save-voucher').innerText = 'تحديث السند وإعادة الإرسال';
     }
 
     function resetVoucherForm() {
@@ -352,7 +435,7 @@
       document.getElementById('voucher-amount').value = '';
       document.getElementById('voucher-note').value = '';
       document.getElementById('form-voucher-title').innerText = 'إصدار سند جديد';
-      document.getElementById('btn-save-voucher').innerText = 'تسجيل السند';
+      document.getElementById('btn-save-voucher').innerText = 'تسجيل السند وإرسال واتساب فوراً';
     }
 
     function deleteVoucher(id) {
@@ -368,17 +451,18 @@
       }
     }
 
-    // إرسال واتساب السند بناءً على القوالب
+    // إرسال الواتساب
     function sendVoucherWA(voucherId) {
       const v = db.vouchers.find(item => item.id === voucherId);
       const client = db.clients.find(c => c.id === v.clientId);
 
-      if (!client || !client.phone) return alert('يرجى تسجيل رقم هاتف العميل أولاً!');
+      if (!client || !client.phone) return alert('تم حفظ السند، ولكن لم يتم الإرسال لعدم وجود رقم هاتف!');
 
       let tpl = v.type === 'receipt' ? db.templates.receipt : db.templates.payment;
       let msg = tpl
         .replace('{name}', client.name)
         .replace('{amount}', v.amount)
+        .replace('{note}', v.note || 'بدون بيان')
         .replace('{balance}', Math.abs(client.balance).toFixed(2))
         .replace('{date}', v.date);
 
@@ -388,7 +472,6 @@
       window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // إرسال التذكير العام
     function sendReminderWA(clientId) {
       const client = db.clients.find(c => c.id === clientId);
       if (!client || !client.phone) return alert('يرجى التأكد من تسجيل رقم الهاتف للعميل أولاً!');
@@ -460,6 +543,7 @@
       renderVouchers();
       renderAllClientsReport();
       loadTemplates();
+      loadStoreSettings();
     }
 
     function renderClients() {
@@ -522,9 +606,10 @@
 
     function renderAllClientsReport() {
       const container = document.getElementById('all-clients-report');
-      let html = '<table><thead><tr><th>العميل</th><th>الرقم</th><th>الرصيد</th></tr></thead><tbody>';
+      let html = '<table><thead><tr><th>العميل</th><th>الرقم</th><th>الرصيد النهائي</th></tr></thead><tbody>';
       db.clients.forEach(c => {
-        html += `<tr><td>${c.name}</td><td>${c.phone || '-'}</td><td>${c.balance.toFixed(2)} ر.ي</td></tr>`;
+        const label = c.balance > 0 ? 'عليه' : c.balance < 0 ? 'له' : 'خالي';
+        html += `<tr><td>${c.name}</td><td>${c.phone || '-'}</td><td>${Math.abs(c.balance).toFixed(2)} ر.ي (${label})</td></tr>`;
       });
       html += '</tbody></table>';
       container.innerHTML = html;
