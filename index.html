@@ -8,7 +8,7 @@
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
     body { margin: 0; background-color: #0b132b; color: #ffffff; padding: 15px; padding-bottom: 80px; }
     header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1c2541; padding-bottom: 10px; margin-bottom: 15px; }
-    h1 { color: #48cae4; margin: 0; font-size: 22px; }
+    h1 { color: #48cae4; margin: 0; font-size: 20px; }
     
     nav { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
     nav button { background-color: #1c2541; color: #a0aec0; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; white-space: nowrap; }
@@ -46,8 +46,11 @@
 <body>
 
   <header>
-    <h1>Sohaib Pro</h1>
-    <span style="font-size: 11px; color: #a0aec0;">محلات الدشيمي</span>
+    <div>
+      <h1>Sohaib Pro</h1>
+      <span style="font-size: 11px; color: #a0aec0;">محلات الدشيمي</span>
+    </div>
+    <button class="btn btn-sm" style="background:#00b4d8;" onclick="showTab('vouchers')">➕ سند جديد</button>
   </header>
 
   <nav>
@@ -55,7 +58,8 @@
     <button id="btn-clients" onclick="showTab('clients')">العملاء</button>
     <button id="btn-vouchers" onclick="showTab('vouchers')">السندات</button>
     <button id="btn-reports" onclick="showTab('reports')">التقارير</button>
-    <button id="btn-settings" onclick="showTab('settings')">الإعدادات والنسخ</button>
+    <button id="btn-templates" onclick="showTab('templates')">قوالب الرسائل</button>
+    <button id="btn-settings" onclick="showTab('settings')">النسخ والاستعادة</button>
   </nav>
 
   <br>
@@ -127,21 +131,49 @@
     <div class="card">
       <p>كشف الأرصدة الإجمالي</p>
       <br>
-      <button class="btn btn-sm" onclick="printAllClients()">🖨️ طباعة كشف كافة العملاء</button>
+      <button class="btn btn-sm" onclick="window.print()">🖨️ طباعة كشف كافة العملاء</button>
       <div id="all-clients-report" style="margin-top: 15px;"></div>
     </div>
   </div>
 
-  <!-- 5. الإعدادات والنسخ الاحتياطي -->
+  <!-- 5. قوالب الرسائل -->
+  <div id="tab-templates" class="hidden">
+    <h3>محرر قوالب الرسائل</h3>
+    <p style="font-size:12px; color:#a0aec0;">يمكنك استخدام المتغيرات التالية: {name} للعميل، {amount} للمبلغ، {balance} للرصيد، {date} للتاريخ.</p>
+
+    <div class="card" style="margin-bottom: 10px;">
+      <p>قالب رسالة سند القبض (سداد):</p>
+      <textarea id="tpl-receipt" rows="3"></textarea>
+    </div>
+
+    <div class="card" style="margin-bottom: 10px;">
+      <p>قالب رسالة سند الصرف (دين جديد):</p>
+      <textarea id="tpl-payment" rows="3"></textarea>
+    </div>
+
+    <div class="card" style="margin-bottom: 10px;">
+      <p>قالب رسالة التذكير العام بالدين:</p>
+      <textarea id="tpl-reminder" rows="3"></textarea>
+    </div>
+
+    <button class="btn" onclick="saveTemplates()">حفظ القوالب</button>
+  </div>
+
+  <!-- 6. النسخ والاستعادة -->
   <div id="tab-settings" class="hidden">
     <div class="card">
-      <p>النسخ الاحتياطي (JSON)</p>
+      <p>النسخ الاحتياطي والاستعادة (JSON)</p>
       <br>
-      <button class="btn" onclick="exportData()">تصدير نسخة احتياطية</button>
+      <button class="btn" onclick="exportData()">💾 تصدير نسخة احتياطية</button>
+      <br><br>
+      <label class="btn" style="background:#7209b7; text-align:center; display:block;">
+        📂 استعادة نسخة احتياطية
+        <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
+      </label>
     </div>
   </div>
 
-  <!-- نافذة عرض حركة حساب العميل (Modal) -->
+  <!-- نافذة كشف الحساب -->
   <div id="statement-modal" class="modal hidden">
     <div class="modal-content">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a385b; padding-bottom: 10px;">
@@ -164,7 +196,7 @@
       </table>
 
       <br>
-      <button class="btn btn-wa" id="modal-wa-btn">📱 إرسال التذكير عبر واتساب</button>
+      <button class="btn btn-wa" id="modal-wa-btn">📱 إرسال تذكير بالحساب عبر واتساب</button>
     </div>
   </div>
 
@@ -174,17 +206,23 @@
         { id: '1', name: 'زيادة وعجز الصندوق', phone: '', balance: -5.65 },
         { id: '2', name: 'عمر العميسي', phone: '967770000000', balance: 12.40 }
       ],
-      vouchers: JSON.parse(localStorage.getItem('pro_vouchers')) || []
+      vouchers: JSON.parse(localStorage.getItem('pro_vouchers')) || [],
+      templates: JSON.parse(localStorage.getItem('pro_templates')) || {
+        receipt: "تم استلام مبلغ {amount} ر.ي من الأخ {name}. رصيدكم المتبقي: {balance} ر.ي بتاريخ {date}. محلات الدشيمي.",
+        payment: "تم تقييد مبلغ {amount} ر.ي لحساب الأخ {name}. رصيدكم الحالي: {balance} ر.ي بتاريخ {date}. محلات الدشيمي.",
+        reminder: "الأخ {name}، نود تذكيركم برصيد حسابكم المتبقي لدينا: {balance} ر.ي. محلات الدشيمي."
+      }
     };
 
     function saveData() {
       localStorage.setItem('pro_clients', JSON.stringify(db.clients));
       localStorage.setItem('pro_vouchers', JSON.stringify(db.vouchers));
+      localStorage.setItem('pro_templates', JSON.stringify(db.templates));
       refreshUI();
     }
 
     function showTab(tabId) {
-      ['home', 'clients', 'vouchers', 'reports', 'settings'].forEach(t => {
+      ['home', 'clients', 'vouchers', 'reports', 'templates', 'settings'].forEach(t => {
         document.getElementById('tab-' + t).classList.add('hidden');
         document.getElementById('btn-' + t).classList.remove('active');
       });
@@ -192,7 +230,22 @@
       document.getElementById('btn-' + tabId).classList.add('active');
     }
 
-    // إدارة العملاء (إضافة + تعديل)
+    // حفظ واستعادة القوالب
+    function loadTemplates() {
+      document.getElementById('tpl-receipt').value = db.templates.receipt;
+      document.getElementById('tpl-payment').value = db.templates.payment;
+      document.getElementById('tpl-reminder').value = db.templates.reminder;
+    }
+
+    function saveTemplates() {
+      db.templates.receipt = document.getElementById('tpl-receipt').value;
+      db.templates.payment = document.getElementById('tpl-payment').value;
+      db.templates.reminder = document.getElementById('tpl-reminder').value;
+      saveData();
+      alert('تم حفظ القوالب بنجاح!');
+    }
+
+    // إدارة العملاء
     function saveClient() {
       const id = document.getElementById('edit-client-id').value;
       const name = document.getElementById('new-client-name').value;
@@ -236,7 +289,7 @@
       }
     }
 
-    // إدارة السندات (إضافة + تعديل)
+    // إدارة السندات + حالة الإرسال
     function saveVoucher() {
       const id = document.getElementById('edit-voucher-id').value;
       const clientId = document.getElementById('voucher-client-id').value;
@@ -249,13 +302,11 @@
       const client = db.clients.find(c => c.id === clientId);
 
       if (id) {
-        // إلغاء تأثير السند القديم
         const oldV = db.vouchers.find(v => v.id === id);
         const oldClient = db.clients.find(c => c.id === oldV.clientId);
         if (oldV.type === 'receipt') oldClient.balance += oldV.amount;
         else oldClient.balance -= oldV.amount;
 
-        // تطبيق السند المعدل
         oldV.clientId = clientId;
         oldV.clientName = client.name;
         oldV.type = type;
@@ -268,7 +319,16 @@
         if (type === 'receipt') client.balance -= amount;
         else client.balance += amount;
 
-        db.vouchers.unshift({ id: Date.now().toString(), clientId, clientName: client.name, type, amount, note, date: new Date().toLocaleDateString('ar-YE') });
+        db.vouchers.unshift({
+          id: Date.now().toString(),
+          clientId,
+          clientName: client.name,
+          type,
+          amount,
+          note,
+          sent: false,
+          date: new Date().toLocaleDateString('ar-YE')
+        });
       }
 
       resetVoucherForm();
@@ -308,18 +368,39 @@
       }
     }
 
-    // إرسال رسالة الواتساب
-    function sendReminderWA(clientId) {
-      const client = db.clients.find(c => c.id === clientId);
-      if (!client || !client.phone) return alert('يرجى التأكد من تسجيل رقم الهاتف للعميل أولاً!');
+    // إرسال واتساب السند بناءً على القوالب
+    function sendVoucherWA(voucherId) {
+      const v = db.vouchers.find(item => item.id === voucherId);
+      const client = db.clients.find(c => c.id === v.clientId);
 
-      const statusMsg = client.balance > 0 ? `المستحق عليكم بمبلغ: ${client.balance.toFixed(2)} ر.ي` : `رصيدكم الحالي لدينا: ${Math.abs(client.balance).toFixed(2)} ر.ي`;
-      const msg = `الأخ / ${client.name}\nتحية طيبة،،\nنود تذكيركم ببيان حسابكم لدى محلات الدشيمي:\n${statusMsg}\nشاكرين تعاونكم معنا.`;
+      if (!client || !client.phone) return alert('يرجى تسجيل رقم هاتف العميل أولاً!');
+
+      let tpl = v.type === 'receipt' ? db.templates.receipt : db.templates.payment;
+      let msg = tpl
+        .replace('{name}', client.name)
+        .replace('{amount}', v.amount)
+        .replace('{balance}', Math.abs(client.balance).toFixed(2))
+        .replace('{date}', v.date);
+
+      v.sent = true;
+      saveData();
 
       window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // عرض كشف حركة الحساب للعميل
+    // إرسال التذكير العام
+    function sendReminderWA(clientId) {
+      const client = db.clients.find(c => c.id === clientId);
+      if (!client || !client.phone) return alert('يرجى التأكد من تسجيل رقم الهاتف للعميل أولاً!');
+
+      let msg = db.templates.reminder
+        .replace('{name}', client.name)
+        .replace('{balance}', Math.abs(client.balance).toFixed(2));
+
+      window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // كشف الحساب
     function openClientStatement(clientId) {
       const client = db.clients.find(c => c.id === clientId);
       if (!client) return;
@@ -354,7 +435,7 @@
       document.getElementById('statement-modal').classList.add('hidden');
     }
 
-    // التحديث والشاشات
+    // التحديث والعرض
     function refreshUI() {
       let debit = 0, credit = 0;
       db.clients.forEach(c => {
@@ -378,6 +459,7 @@
       renderClients();
       renderVouchers();
       renderAllClientsReport();
+      loadTemplates();
     }
 
     function renderClients() {
@@ -414,18 +496,21 @@
       recentContainer.innerHTML = '';
 
       db.vouchers.forEach((v, index) => {
+        const sentBadge = v.sent ? '<span style="color:#38a169; font-size:10px;">✓ تم الإرسال</span>' : '<span style="color:#e53e3e; font-size:10px;">✕ لم يرسل</span>';
+
         const html = `
           <div class="item-card">
             <div style="display:flex; justify-content:space-between;">
               <div>
                 <strong>${v.clientName}</strong> - <small>${v.note || 'بدون بيان'}</small>
-                <small style="display:block; color:#a0aec0;">${v.date}</small>
+                <small style="display:block; color:#a0aec0;">${v.date} | ${sentBadge}</small>
               </div>
               <div>
                 <span class="badge ${v.type==='receipt'?'bg-green':'bg-red'}">${v.type==='receipt'?'+':'-'} ${v.amount} ر.ي</span>
               </div>
             </div>
             <div style="margin-top:8px; display:flex; gap:5px; justify-content:flex-end;">
+              <button class="btn btn-sm btn-wa" onclick="sendVoucherWA('${v.id}')">📱 ${v.sent ? 'إعادة إرسال' : 'إرسال واتساب'}</button>
               <button class="btn btn-sm" onclick="editVoucher('${v.id}')">✏️ تعديل</button>
               <button class="btn btn-sm btn-danger" onclick="deleteVoucher('${v.id}')">🗑️ حذف</button>
             </div>
@@ -445,16 +530,35 @@
       container.innerHTML = html;
     }
 
-    function printAllClients() {
-      window.print();
-    }
-
+    // تصدير واستعادة البيانات
     function exportData() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
       const dlAnchorElem = document.createElement('a');
       dlAnchorElem.setAttribute("href", dataStr);
       dlAnchorElem.setAttribute("download", "SohaibPro_Backup.json");
       dlAnchorElem.click();
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedDB = JSON.parse(e.target.result);
+          if (importedDB.clients && importedDB.vouchers) {
+            db = importedDB;
+            saveData();
+            alert('تمت استعادة البيانات بنجاح!');
+          } else {
+            alert('ملف غير صالح!');
+          }
+        } catch (err) {
+          alert('خطأ في قراءة الملف!');
+        }
+      };
+      reader.readAsText(file);
     }
 
     refreshUI();
