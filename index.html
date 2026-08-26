@@ -1,0 +1,156 @@
+import React, { useState, useEffect } from 'react';
+
+export default function App() {
+  // 1. حالات البيانات والذاكرة المحلية
+  const [clients, setClients] = useState(() => {
+    const saved = localStorage.getItem('sohaib_clients');
+    return saved ? JSON.parse(saved) : [
+      { id: '1', name: 'زيادة وعجز الصندوق', phone: '', balance: -5.65, status: 'active' },
+      { id: '2', name: 'عمر العميسي', phone: '967770000000', balance: 12.40, status: 'active' }
+    ];
+  });
+
+  const [vouchers, setVouchers] = useState(() => {
+    const saved = localStorage.getItem('sohaib_vouchers');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [activeTab, setActiveTab] = useState('home');
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pendingAction, setPendingAction] = useState(null);
+
+  // حفظ البيانات تلقائياً في المتصفح
+  useEffect(() => {
+    localStorage.setItem('sohaib_clients', JSON.stringify(clients));
+  }, [clients]);
+
+  useEffect(() => {
+    localStorage.setItem('sohaib_vouchers', JSON.stringify(vouchers));
+  }, [vouchers]);
+
+  // 2. حسابات المؤشرات المالية
+  const totalDebt = clients.reduce((acc, c) => acc + (c.balance > 0 ? c.balance : 0), 0);
+  const totalCredit = clients.reduce((acc, c) => acc + (c.balance < 0 ? Math.abs(c.balance) : 0), 0);
+  const netTotal = totalDebt - totalCredit;
+
+  // 3. آلية حماية الحذف والتحكم (PIN Code)
+  const handlePinSubmit = () => {
+    if (pinInput === '1234') {
+      if (pendingAction) pendingAction();
+      setShowPinModal(false);
+      setPinInput('');
+      setPendingAction(null);
+    } else {
+      alert('رمز الحماية غير صحيح!');
+    }
+  };
+
+  const requestProtectedAction = (action) => {
+    setPendingAction(() => action);
+    setShowPinModal(true);
+  };
+
+  // 4. إرسال الواتساب المباشر (Tap-to-Send)
+  const sendWhatsApp = (phone, name, amount, type, balance) => {
+    if (!phone) {
+      alert('يرجى إضافة رقم هاتف العميل أولاً');
+      return;
+    }
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const dir = balance > 0 ? 'عليه' : balance < 0 ? 'له' : 'مسدد بالكامل';
+    const msg = `مرحباً ${name}، تم تسجيل سند ${type === 'receipt' ? 'قبض' : 'صرف'} بمبلغ ${amount} ر.ي. إجمالي الدين المتبقي: ${Math.abs(balance)} ر.ي (${dir}). الدشيمي`;
+    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
+  return (
+    <div style={{ backgroundColor: '#0b132b', color: '#ffffff', minHeight: '100vh', fontFamily: 'sans-serif', direction: 'rtl', padding: '15px' }}>
+      {/* الهيدر العلوي */}
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1c2541', paddingBottom: '10px' }}>
+        <h1 style={{ color: '#48cae4', margin: 0 }}>Sohaib pro</h1>
+        <nav style={{ display: 'flex', gap: '10px' }}>
+          {['home', 'clients', 'vouchers'].map(tab => (
+            <button 
+              key={tab} 
+              onClick={() => setActiveTab(tab)}
+              style={{
+                backgroundColor: activeTab === tab ? '#00b4d8' : '#1c2541',
+                color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer'
+              }}
+            >
+              {tab === 'home' ? 'الرئيسية' : tab === 'clients' ? 'العملاء' : 'السندات'}
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      {/* الشاشة الرئيسية */}
+      {activeTab === 'home' && (
+        <main style={{ marginTop: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+            <div style={{ backgroundColor: '#1c2541', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
+              <p style={{ margin: 0, color: '#a0aec0' }}>صافي المستحق الإجمالي</p>
+              <h2 style={{ color: '#48cae4', margin: '5px 0' }}>{netTotal.toLocaleString()} ر.ي</h2>
+            </div>
+            <div style={{ backgroundColor: '#1c2541', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
+              <p style={{ margin: 0, color: '#a0aec0' }}>إجمالي الديون (عليه)</p>
+              <h2 style={{ color: '#e53e3e', margin: '5px 0' }}>{totalDebt.toLocaleString()} ر.ي</h2>
+            </div>
+            <div style={{ backgroundColor: '#1c2541', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
+              <p style={{ margin: 0, color: '#a0aec0' }}>إجمالي الدائنين (له)</p>
+              <h2 style={{ color: '#38a169', margin: '5px 0' }}>{totalCredit.toLocaleString()} ر.ي</h2>
+            </div>
+          </div>
+        </main>
+      )}
+
+      {/* شاشة العملاء */}
+      {activeTab === 'clients' && (
+        <main style={{ marginTop: '20px' }}>
+          <h3>قائمة العملاء ({clients.length})</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {clients.map(client => (
+              <div key={client.id} style={{ backgroundColor: '#1c2541', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h4 style={{ margin: 0 }}>{client.name}</h4>
+                  <small style={{ color: '#a0aec0' }}>{client.phone || 'بدون رقم'}</small>
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <span style={{ fontWeight: 'bold', color: client.balance > 0 ? '#e53e3e' : '#38a169' }}>
+                    {Math.abs(client.balance)} ر.ي ({client.balance > 0 ? 'عليه' : client.balance < 0 ? 'له' : 'مسدد'})
+                  </span>
+                  <div style={{ marginTop: '5px' }}>
+                    <button 
+                      onClick={() => requestProtectedAction(() => setClients(clients.filter(c => c.id !== client.id)))}
+                      style={{ backgroundColor: '#e53e3e', color: '#fff', border: 'none', padding: '3px 8px', borderRadius: '3px', cursor: 'pointer' }}
+                    >
+                      حذف
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+      )}
+
+      {/* نافذة التأكيد بـ PIN */}
+      {showPinModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ backgroundColor: '#1c2541', padding: '20px', borderRadius: '8px', textAlign: 'center', width: '280px' }}>
+            <h4>أدخل رمز التأكيد (1234)</h4>
+            <input 
+              type="password" 
+              value={pinInput} 
+              onChange={e => setPinInput(e.target.value)}
+              style={{ padding: '8px', width: '80%', marginBottom: '10px', textAlign: 'center' }}
+            />
+            <br />
+            <button onClick={handlePinSubmit} style={{ backgroundColor: '#00b4d8', color: '#fff', border: 'none', padding: '8px 15px', borderRadius: '5px', cursor: 'pointer' }}>تأكيد</button>
+            <button onClick={() => setShowPinModal(false)} style={{ backgroundColor: 'transparent', color: '#a0aec0', border: 'none', marginRight: '10px', cursor: 'pointer' }}>إلغاء</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
