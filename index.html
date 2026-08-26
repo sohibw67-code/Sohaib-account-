@@ -4,117 +4,85 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sohaib pro</title>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    body { margin: 0; background-color: #0b132b; color: #ffffff; font-family: system-ui, -apple-system, sans-serif; }
-    button { cursor: pointer; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background-color: #0b132b; color: #ffffff; font-family: system-ui, -apple-system, sans-serif; padding: 15px; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1c2541; padding-bottom: 10px; }
+    h1 { color: #48cae4; margin: 0; font-size: 24px; }
+    nav button { background-color: #1c2541; color: #fff; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 14px; }
+    nav button.active { background-color: #00b4d8; }
+    .card { background-color: #1c2541; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 12px; }
+    .card p { margin: 0; color: #a0aec0; font-size: 14px; }
+    .card h2 { margin: 5px 0 0 0; font-size: 22px; }
+    .client-item { background-color: #1c2541; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .client-name { font-weight: bold; font-size: 16px; margin: 0; }
+    .client-phone { color: #a0aec0; font-size: 12px; display: block; }
+    .badge-red { color: #e53e3e; font-weight: bold; }
+    .badge-green { color: #38a169; font-weight: bold; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+  <header>
+    <h1>Sohaib pro</h1>
+    <nav>
+      <button id="btn-home" class="active" onclick="switchTab('home')">الرئيسية</button>
+      <button id="btn-clients" onclick="switchTab('clients')">العملاء</button>
+    </nav>
+  </header>
 
-    function App() {
-      const [clients, setClients] = useState(() => {
-        const saved = localStorage.getItem('sohaib_clients');
-        return saved ? JSON.parse(saved) : [
-          { id: '1', name: 'زيادة وعجز الصندوق', phone: '', balance: -5.65 },
-          { id: '2', name: 'عمر العميسي', phone: '967770000000', balance: 12.40 }
-        ];
-      });
+  <!-- تبويب الرئيسية -->
+  <main id="tab-home" style="margin-top: 20px;">
+    <div class="card">
+      <p>صافي المستحق الإجمالي</p>
+      <h2 style="color: #48cae4;" id="net-total">6.75 ر.ي</h2>
+    </div>
+    <div class="card">
+      <p>إجمالي الديون (عليه)</p>
+      <h2 style="color: #e53e3e;" id="total-debt">12.40 ر.ي</h2>
+    </div>
+    <div class="card">
+      <p>إجمالي الدائنين (له)</p>
+      <h2 style="color: #38a169;" id="total-credit">5.65 ر.ي</h2>
+    </div>
+  </main>
 
-      const [activeTab, setActiveTab] = useState('home');
-      const [showPinModal, setShowPinModal] = useState(false);
-      const [pinInput, setPinInput] = useState('');
-      const [pendingAction, setPendingAction] = useState(null);
+  <!-- تبويب العملاء -->
+  <main id="tab-clients" class="hidden" style="margin-top: 20px;">
+    <h3>قائمة العملاء (2)</h3>
+    <div class="client-item">
+      <div>
+        <p class="client-name">زيادة وعجز الصندوق</p>
+        <span class="client-phone">بدون رقم</span>
+      </div>
+      <span class="badge-green">5.65 ر.ي (له)</span>
+    </div>
+    <div class="client-item">
+      <div>
+        <p class="client-name">عمر العميسي</p>
+        <span class="client-phone">967770000000</span>
+      </div>
+      <span class="badge-red">12.40 ر.ي (عليه)</span>
+    </div>
+  </main>
 
-      useEffect(() => {
-        localStorage.setItem('sohaib_clients', JSON.stringify(clients));
-      }, [clients]);
+  <script>
+    function switchTab(tabName) {
+      document.getElementById('tab-home').classList.add('hidden');
+      document.getElementById('tab-clients').classList.add('hidden');
+      document.getElementById('btn-home').classList.remove('active');
+      document.getElementById('btn-clients').classList.remove('active');
 
-      const totalDebt = clients.reduce((acc, c) => acc + (c.balance > 0 ? c.balance : 0), 0);
-      const totalCredit = clients.reduce((acc, c) => acc + (c.balance < 0 ? Math.abs(c.balance) : 0), 0);
-      const netTotal = totalDebt - totalCredit;
-
-      const handlePinSubmit = () => {
-        if (pinInput === '1234') {
-          if (pendingAction) pendingAction();
-          setShowPinModal(false);
-          setPinInput('');
-          setPendingAction(null);
-        } else {
-          alert('رمز الحماية غير صحيح!');
-        }
-      };
-
-      return (
-        <div style={{ padding: '15px', minHeight: '100vh' }}>
-          <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1c2541', paddingBottom: '10px' }}>
-            <h1 style={{ color: '#48cae4', margin: 0, fontSize: '24px' }}>Sohaib pro</h1>
-            <nav style={{ display: 'flex', gap: '8px' }}>
-              {['home', 'clients'].map(tab => (
-                <button 
-                  key={tab} 
-                  onClick={() => setActiveTab(tab)}
-                  style={{
-                    backgroundColor: activeTab === tab ? '#00b4d8' : '#1c2541',
-                    color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '5px'
-                  }}
-                >
-                  {tab === 'home' ? 'الرئيسية' : 'العملاء'}
-                </button>
-              ))}
-            </nav>
-          </header>
-
-          {activeTab === 'home' && (
-            <main style={{ marginTop: '20px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ backgroundColor: '#1c2541', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
-                  <p style={{ margin: 0, color: '#a0aec0' }}>صافي المستحق الإجمالي</p>
-                  <h2 style={{ color: '#48cae4', margin: '5px 0' }}>{netTotal.toFixed(2)} ر.ي</h2>
-                </div>
-                <div style={{ backgroundColor: '#1c2541', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
-                  <p style={{ margin: 0, color: '#a0aec0' }}>إجمالي الديون (عليه)</p>
-                  <h2 style={{ color: '#e53e3e', margin: '5px 0' }}>{totalDebt.toFixed(2)} ر.ي</h2>
-                </div>
-                <div style={{ backgroundColor: '#1c2541', padding: '15px', borderRadius: '8px', textAlign: 'center' }}>
-                  <p style={{ margin: 0, color: '#a0aec0' }}>إجمالي الدائنين (له)</p>
-                  <h2 style={{ color: '#38a169', margin: '5px 0' }}>{totalCredit.toFixed(2)} ر.ي</h2>
-                </div>
-              </div>
-            </main>
-          )}
-
-          {activeTab === 'clients' && (
-            <main style={{ marginTop: '20px' }}>
-              <h3>قائمة العملاء ({clients.length})</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {clients.map(client => (
-                  <div key={client.id} style={{ backgroundColor: '#1c2541', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <h4 style={{ margin: 0 }}>{client.name}</h4>
-                      <small style={{ color: '#a0aec0' }}>{client.phone || 'بدون رقم'}</small>
-                    </div>
-                    <div style={{ textAlign: 'left' }}>
-                      <span style={{ fontWeight: 'bold', color: client.balance > 0 ? '#e53e3e' : '#38a169' }}>
-                        {Math.abs(client.balance)} ر.ي ({client.balance > 0 ? 'عليه' : 'له'})
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </main>
-          )}
-        </div>
-      );
+      if (tabName === 'home') {
+        document.getElementById('tab-home').classList.remove('hidden');
+        document.getElementById('btn-home').classList.add('active');
+      } else {
+        document.getElementById('tab-clients').classList.remove('hidden');
+        document.getElementById('btn-clients').classList.add('active');
+      }
     }
-
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
+
 </body>
 </html>
