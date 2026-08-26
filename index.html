@@ -60,6 +60,7 @@
 
     .btn { background-color: #00b4d8; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; }
     .btn-danger { background-color: #e53e3e; color: #fff; }
+    .btn-secondary { background-color: #4a5568; color: #fff; }
     .btn-wa { background-color: #25d366; color: #fff; }
     .btn-sm { width: auto; padding: 4px 8px; font-size: 12px; display: inline-flex; align-items: center; gap: 3px; }
 
@@ -98,7 +99,7 @@
       <button class="theme-toggle" onclick="toggleTheme()">
         <span id="theme-icon">🌙</span> <span id="theme-text">الوضع الداكن</span>
       </button>
-      <button class="btn btn-sm" style="background:#00b4d8;" onclick="showTab('vouchers')">➕ سند جديد</button>
+      <button class="btn btn-sm" style="background:#00b4d8;" onclick="showTab('vouchers'); resetVoucherForm();">➕ سند جديد</button>
     </div>
   </header>
 
@@ -137,7 +138,6 @@
 
   <!-- 2. العملاء -->
   <div id="tab-clients" class="hidden">
-    <!-- أدوات الفلترة والبحث للعملاء -->
     <div class="filter-row">
       <input type="text" id="client-search" placeholder="بحث باسم العميل أو الرقم..." onkeyup="renderClients()">
       <select id="client-filter-sort" onchange="renderClients()">
@@ -162,7 +162,11 @@
   <!-- 3. السندات -->
   <div id="tab-vouchers" class="hidden">
     <div class="card" style="margin-bottom: 15px;">
-      <p id="form-voucher-title">إصدار سند جديد</p>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <p id="form-voucher-title" style="margin: 0; font-weight: bold;">إصدار سند جديد</p>
+        <button class="btn btn-sm btn-secondary" onclick="resetVoucherForm()">➕ فتح سند جديد</button>
+      </div>
+      
       <input type="hidden" id="edit-voucher-id">
       
       <label style="font-size: 11px; color: var(--text-muted);">تصفية / بحث عن عميل:</label>
@@ -174,7 +178,6 @@
         <option value="payment">سند صرف (- دَين جديد)</option>
       </select>
       
-      <!-- موعد السداد لعمليات الصرف -->
       <div id="due-date-container" class="hidden">
         <label style="font-size: 11px; color: #ff8fa3;">موعد الاستحقاق / السداد:</label>
         <input type="date" id="voucher-due-date">
@@ -203,7 +206,7 @@
     <div id="overdue-list"></div>
   </div>
 
-  <!-- 5. التقارير المنظمة للطباعة و PDF -->
+  <!-- 5. التقارير -->
   <div id="tab-reports" class="hidden">
     <div class="print-header hidden">
       <div>
@@ -215,7 +218,6 @@
 
     <h3>تقارير الحسابات الرسمية</h3>
     
-    <!-- الحركة اليومية -->
     <div class="card" style="margin-bottom: 15px;">
       <p>تقرير الحركة اليومية (مقبوضات ومصروفات)</p>
       <input type="date" id="report-daily-date">
@@ -237,7 +239,7 @@
     </div>
   </div>
 
-  <!-- 6. الهوية والإعدادات والقوالب -->
+  <!-- 6. الإعدادات والقوالب -->
   <div id="tab-templates" class="hidden">
     <div class="card" style="margin-bottom: 15px;">
       <p>شعار واسم المحل (للطباعة والتقارير)</p>
@@ -325,7 +327,7 @@
       templates: JSON.parse(localStorage.getItem('pro_templates')) || {
         receipt: "تم استلام مبلغ {amount} ر.ي من الأخ {name}.\nالبيان: {note}\nرصيدكم المتبقي: {balance} ر.ي بتاريخ {date}.\nمحلات الدشيمي.",
         payment: "تم تقييد مبلغ {amount} ر.ي لحساب الأخ {name}.\nالبيان: {note}\nتاريخ الاستحقاق: {dueDate}\nرصيدكم الحالي: {balance} ر.ي بتاريخ {date}.\nمحلات الدشيمي.",
-        reminder: "الأخ {name}، نود تذكيركم بضرورة سداد المبلغ المستحق عليكم برصيد: {balance} ر.ي.\nمحلات الدشيمي."
+        reminder: "الأخ {name}، نود تذكيركم بضرورة سداد المبلغ المستحق عليكم برصيد: {balance} ر.ي.\nتاريخ الاستحقاق كان: {dueDate}\nمحلات الدشيمي."
       },
       store: JSON.parse(localStorage.getItem('pro_store')) || {
         name: "محلات الدشيمي للتجارة العامة",
@@ -335,7 +337,6 @@
       theme: localStorage.getItem('pro_theme') || 'dark'
     };
 
-    // حماية التعديل والحذف برمز أمان
     function authenticate() {
       const pin = prompt('يرجى إدخال رمز الأمان لإتمام العملية:');
       if (pin === SECURITY_PIN) {
@@ -438,7 +439,6 @@
       alert('تم حفظ القوالب بنجاح!');
     }
 
-    // إضافة/تعديل العميل
     function saveClient() {
       const id = document.getElementById('edit-client-id').value;
       const name = document.getElementById('new-client-name').value;
@@ -484,9 +484,9 @@
       }
     }
 
-    // خيار إصدار سند جديد مباشرة من كارت العميل
     function createVoucherForClient(clientId) {
       showTab('vouchers');
+      resetVoucherForm();
       document.getElementById('voucher-client-id').value = clientId;
     }
 
@@ -499,7 +499,6 @@
       });
     }
 
-    // حفظ وتعديل السندات
     function saveVoucher() {
       const id = document.getElementById('edit-voucher-id').value;
       const clientId = document.getElementById('voucher-client-id').value;
@@ -537,7 +536,7 @@
         if (type === 'receipt') client.balance -= amount;
         else {
           client.balance += amount;
-          if (dueDate) client.dueDate = dueDate; // تحديث تلقائي لموعد السداد بالعميل
+          if (dueDate) client.dueDate = dueDate;
         }
 
         newVoucherId = Date.now().toString();
@@ -555,9 +554,11 @@
         });
       }
 
-      resetVoucherForm();
       saveData();
       sendVoucherWA(newVoucherId);
+
+      // فتح سند جديد تلقائياً وتصفية الحقول
+      resetVoucherForm();
     }
 
     function editVoucher(id) {
@@ -600,7 +601,6 @@
       }
     }
 
-    // إرسال الرسائل عبر واتساب
     function sendVoucherWA(voucherId) {
       const v = db.vouchers.find(item => item.id === voucherId);
       const client = db.clients.find(c => c.id === v.clientId);
@@ -608,13 +608,15 @@
       if (!client || !client.phone) return alert('تم حفظ السند، ولكن لم يتم الإرسال لعدم وجود رقم هاتف!');
 
       let tpl = v.type === 'receipt' ? db.templates.receipt : db.templates.payment;
+      
+      // إصلاح استبدال بيان السند {note}
       let msg = tpl
-        .replace('{name}', client.name)
-        .replace('{amount}', v.amount)
-        .replace('{note}', v.note || 'بدون بيان')
-        .replace('{dueDate}', v.dueDate || 'غير محدد')
-        .replace('{balance}', Math.abs(client.balance).toFixed(2))
-        .replace('{date}', v.date);
+        .replace(/{name}/g, client.name)
+        .replace(/{amount}/g, v.amount)
+        .replace(/{note}/g, v.note || 'بدون بيان')
+        .replace(/{dueDate}/g, v.dueDate || 'غير محدد')
+        .replace(/{balance}/g, Math.abs(client.balance).toFixed(2))
+        .replace(/{date}/g, v.date);
 
       v.sent = true;
       saveData();
@@ -627,13 +629,13 @@
       if (!client || !client.phone) return alert('يرجى التأكد من تسجيل رقم الهاتف للعميل أولاً!');
 
       let msg = db.templates.reminder
-        .replace('{name}', client.name)
-        .replace('{balance}', Math.abs(client.balance).toFixed(2));
+        .replace(/{name}/g, client.name)
+        .replace(/{balance}/g, Math.abs(client.balance).toFixed(2))
+        .replace(/{dueDate}/g, client.dueDate || 'غير محدد');
 
       window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // تقرير الحركة اليومية
     function generateDailyReport() {
       const selectedDate = document.getElementById('report-daily-date').value;
       if (!selectedDate) return alert('يرجى تحديد التاريخ لملاحظة الحركة اليومية');
@@ -733,11 +735,9 @@
       loadStoreSettings();
       applyTheme(db.theme);
 
-      // تعيين تاريخ اليوم كافتراضي لتقرير الحركة
       document.getElementById('report-daily-date').value = new Date().toISOString().split('T')[0];
     }
 
-    // عرض فلترة العملاء
     function renderClients() {
       const container = document.getElementById('clients-list');
       const search = document.getElementById('client-search').value.toLowerCase();
@@ -775,7 +775,7 @@
       });
     }
 
-    // عرض وتوزيع المتأخرين عن السداد
+    // تعديل الفلترة لنقل العملاء المتأخرين تلقائياً إذا تجاوز تاريخ سدادهم اليوم الحالي
     function renderOverdue() {
       const container = document.getElementById('overdue-list');
       const search = document.getElementById('overdue-search').value.toLowerCase();
@@ -784,8 +784,8 @@
 
       container.innerHTML = '';
 
-      // العميل متأخر إذا كان عليه دين وتاريخ السداد المكتوب أصغر من تاريخ اليوم
-      let overdueClients = db.clients.filter(c => c.balance > 0 && c.dueDate && c.dueDate < today && c.name.toLowerCase().includes(search));
+      // نقل وتصفية العملاء الذين عليهم رصيد مستحق وتاريخ السداد الخاص بهم أصغر من أو يساوي اليوم الحالي
+      let overdueClients = db.clients.filter(c => c.balance > 0 && c.dueDate && c.dueDate <= today && c.name.toLowerCase().includes(search));
 
       if (sort === 'amount') overdueClients.sort((a, b) => b.balance - a.balance);
       else overdueClients.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
