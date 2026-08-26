@@ -84,14 +84,22 @@
     th, td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
     th { background: var(--th-bg); color: #48cae4; }
 
-    /* تنبيه للتثبيت على الهاتف */
-    #install-banner {
-      background: #00b4d8; color: #fff; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: bold;
+    .client-live-balance {
+      background-color: var(--input-bg);
+      border: 1px dashed #00b4d8;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      color: #48cae4;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     @media print {
       body { background-color: #fff !important; color: #000 !important; padding: 0; }
-      nav, header button, .btn, input, select, textarea, #tab-home, #tab-clients, #tab-vouchers, #tab-overdue, #tab-templates, #tab-settings, #install-banner { display: none !important; }
+      nav, header button, .btn, input, select, textarea, #tab-home, #tab-clients, #tab-vouchers, #tab-overdue, #tab-templates, #tab-settings { display: none !important; }
       #tab-reports { display: block !important; }
       .card { background-color: #fff !important; border: 1px solid #ccc !important; color: #000 !important; }
       table { border-color: #000 !important; }
@@ -103,12 +111,6 @@
   </style>
 </head>
 <body>
-
-  <!-- شريط تثبيت التطبيق إذا كان متاحاً -->
-  <div id="install-banner" class="hidden">
-    <span>📲 احصل على تطبيق Sohaib Pro على شاشتك</span>
-    <button class="btn btn-sm btn-secondary" onclick="installApp()">تثبيت التطبيق</button>
-  </div>
 
   <header>
     <div class="brand-header">
@@ -195,7 +197,14 @@
       <label style="font-size: 11px; color: var(--text-muted);">تصفية / بحث عن عميل:</label>
       <input type="text" id="voucher-client-search" placeholder="اكتب اسم العميل للبحث السريع..." onkeyup="filterVoucherClients()">
       
-      <select id="voucher-client-id"></select>
+      <select id="voucher-client-id" onchange="updateSelectedClientBalance()"></select>
+      
+      <!-- خانة إظهار رصيد العميل المباشر -->
+      <div id="live-balance-box" class="client-live-balance hidden">
+        <span>الرصيد الحالي للعميل:</span>
+        <strong id="live-balance-val">0.00 ر.ي</strong>
+      </div>
+
       <select id="voucher-type" onchange="toggleDueDateField()">
         <option value="receipt">سند قبض (+ سداد دَين)</option>
         <option value="payment">سند صرف (- دَين جديد)</option>
@@ -509,6 +518,7 @@
       showTab('vouchers');
       resetVoucherForm();
       document.getElementById('voucher-client-id').value = clientId;
+      updateSelectedClientBalance();
     }
 
     function filterVoucherClients() {
@@ -518,6 +528,28 @@
       db.clients.filter(c => c.name.toLowerCase().includes(query)).forEach(c => {
         select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
       });
+      updateSelectedClientBalance();
+    }
+
+    // إظهار رصيد العميل المختار مباشرة في خانة السند
+    function updateSelectedClientBalance() {
+      const clientId = document.getElementById('voucher-client-id').value;
+      const box = document.getElementById('live-balance-box');
+      const val = document.getElementById('live-balance-val');
+
+      if (!clientId) {
+        box.classList.add('hidden');
+        return;
+      }
+
+      const client = db.clients.find(c => c.id === clientId);
+      if (client) {
+        const label = client.balance > 0 ? 'عليه (لك)' : client.balance < 0 ? 'له (عليك)' : 'خالي';
+        val.innerText = `${Math.abs(client.balance).toFixed(2)} ر.ي (${label})`;
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+      }
     }
 
     function saveVoucher() {
@@ -589,6 +621,7 @@
       document.getElementById('voucher-note').value = v.note;
       document.getElementById('voucher-due-date').value = v.dueDate || '';
 
+      updateSelectedClientBalance();
       toggleDueDateField();
       document.getElementById('form-voucher-title').innerText = 'تعديل السند';
       document.getElementById('btn-save-voucher').innerText = 'تحديث السند وإعادة الإرسال';
@@ -601,6 +634,7 @@
       document.getElementById('voucher-due-date').value = '';
       document.getElementById('voucher-client-search').value = '';
       filterVoucherClients();
+      updateSelectedClientBalance();
       toggleDueDateField();
       document.getElementById('form-voucher-title').innerText = 'إصدار سند جديد';
       document.getElementById('btn-save-voucher').innerText = 'تسجيل السند وإرسال واتساب فوراً';
@@ -652,6 +686,34 @@
         .replace(/{dueDate}/g, client.dueDate || 'غير محدد');
 
       window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // إرسال كشف حساب كاملاً ومفصلاً عبر الواتساب
+    function sendFullStatementWA(clientId) {
+      const client = db.clients.find(c => c.id === clientId);
+      if (!client || !client.phone) return alert('يرجى التأكد من تسجيل رقم الهاتف للعميل أولاً!');
+
+      const clientVouchers = db.vouchers.filter(v => v.clientId === clientId);
+      let statementText = `📋 *كشف حساب مالي - ${db.store.name}*\n`;
+      statementText += `العميل: *${client.name}*\n`;
+      statementText += `--------------------------------\n`;
+
+      if (clientVouchers.length === 0) {
+        statementText += `لا توجد حركات مسجلة سابقاً.\n`;
+      } else {
+        clientVouchers.forEach((v, idx) => {
+          const typeStr = v.type === 'receipt' ? 'قبض (+)' : 'صرف (-)';
+          statementText += `${idx + 1}. [${v.date}] ${typeStr}: ${v.amount} ر.ي | ${v.note}\n`;
+        });
+      }
+
+      const label = client.balance > 0 ? 'عليكم (دَين)' : client.balance < 0 ? 'لكم' : 'متعادل';
+      statementText += `--------------------------------\n`;
+      statementText += `*الرصيد النهائي الحالي:* ${Math.abs(client.balance).toFixed(2)} ر.ي (${label})\n`;
+      if (client.dueDate) statementText += `تاريخ الاستحقاق: ${client.dueDate}\n`;
+      statementText += `\nشكراً لتعاملكم معنا!`;
+
+      window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(statementText)}`, '_blank');
     }
 
     function generateDailyReport() {
@@ -718,7 +780,7 @@
         });
       }
 
-      document.getElementById('modal-wa-btn').onclick = () => sendReminderWA(client.id);
+      document.getElementById('modal-wa-btn').onclick = () => sendFullStatementWA(client.id);
       document.getElementById('statement-modal').classList.remove('hidden');
     }
 
@@ -783,9 +845,9 @@
               </div>
               <span class="badge ${c.balance > 0 ? 'bg-blue' : 'bg-green'}">${Math.abs(c.balance).toFixed(2)} ر.ي (${label})</span>
             </div>
-            <div style="margin-top:10px; display:flex; gap:5px; justify-content:flex-end;">
+            <div style="margin-top:10px; display:flex; gap:5px; justify-content:flex-end; flex-wrap:wrap;">
               <button class="btn btn-sm" style="background:#00b4d8;" onclick="createVoucherForClient('${c.id}')">➕ سند</button>
-              <button class="btn btn-sm btn-wa" onclick="sendReminderWA('${c.id}')">📱 واتساب</button>
+              <button class="btn btn-sm btn-wa" onclick="sendFullStatementWA('${c.id}')">📊 كشف حساب واتساب</button>
               <button class="btn btn-sm" onclick="editClient('${c.id}')">✏️ تعديل</button>
               <button class="btn btn-sm btn-danger" onclick="deleteClient('${c.id}')">🗑️</button>
             </div>
@@ -899,26 +961,6 @@
         }
       };
       reader.readAsText(file);
-    }
-
-    // إدارة تثبيت التطبيق على الشاشة
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      document.getElementById('install-banner').classList.remove('hidden');
-    });
-
-    function installApp() {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            document.getElementById('install-banner').classList.add('hidden');
-          }
-          deferredPrompt = null;
-        });
-      }
     }
 
     refreshUI();
