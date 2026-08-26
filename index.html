@@ -41,10 +41,6 @@
 
     * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.2s, color 0.2s; }
     body { margin: 0; background-color: var(--bg-color); color: var(--text-color); padding: 15px; padding-bottom: 80px; user-select: none; }
-    
-    #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 80vh; text-align: center; }
-    #login-screen button { max-width: 280px; padding: 12px; font-size: 14px; background: #ea4335; }
-
     header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--header-border); padding-bottom: 10px; margin-bottom: 15px; }
     .brand-header { display: flex; align-items: center; gap: 10px; }
     .brand-header img { max-height: 40px; border-radius: 4px; display: none; }
@@ -83,7 +79,7 @@
     .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 99; }
     .modal-content { background: var(--card-bg); padding: 20px; border-radius: 10px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-color); }
 
-    .hidden { display: none !important; }
+    .hidden { display: none; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
     th, td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
     th { background: var(--th-bg); color: #48cae4; }
@@ -116,226 +112,208 @@
 </head>
 <body>
 
-  <!-- شاشة الدخول للمزامنة -->
-  <div id="login-screen" class="card">
-    <h2 style="color: #48cae4; margin-bottom: 10px;">Sohaib Pro</h2>
-    <p style="margin-bottom: 20px;">قم بتسجيل الدخول لمزامنة بيانات الحسابات سحابياً فوراً عبر جميع أجهزتك</p>
-    <button class="btn" onclick="loginWithGoogle()">🔑 الدخول بحساب Google للمزامنة</button>
+  <header>
+    <div class="brand-header">
+      <img id="header-logo" src="" alt="لوجو">
+      <div>
+        <h1 id="header-store-name">Sohaib Pro</h1>
+        <span id="header-subtitle" style="font-size: 11px; color: var(--text-muted);">محلات الدشيمي</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">🌙</span> <span id="theme-text">الوضع الداكن</span>
+      </button>
+      <button class="btn btn-sm" style="background:#00b4d8;" onclick="showTab('vouchers'); resetVoucherForm();">➕ سند جديد</button>
+    </div>
+  </header>
+
+  <nav>
+    <button id="btn-home" class="active" onclick="showTab('home')">الرئيسية</button>
+    <button id="btn-clients" onclick="showTab('clients')">العملاء</button>
+    <button id="btn-vouchers" onclick="showTab('vouchers')">السندات</button>
+    <button id="btn-overdue" onclick="showTab('overdue')">⚠️ المتأخرين</button>
+    <button id="btn-reports" onclick="showTab('reports')">التقارير PDF</button>
+    <button id="btn-templates" onclick="showTab('templates')">الإعدادات والقوالب</button>
+    <button id="btn-settings" onclick="showTab('settings')">النسخ والاستعادة</button>
+  </nav>
+
+  <br>
+
+  <!-- 1. الرئيسية -->
+  <div id="tab-home">
+    <div class="grid-2">
+      <div class="card">
+        <p>صافي الإجمالي</p>
+        <h2 style="color: #48cae4;" id="net-total">0.00 ر.ي</h2>
+      </div>
+      <div class="card">
+        <p>عليه (لك)</p>
+        <h2 style="color: #00b4d8;" id="total-debit">0.00 ر.ي</h2>
+      </div>
+      <div class="card" style="grid-column: span 2;">
+        <p>له (عليك)</p>
+        <h2 style="color: #7209b7;" id="total-credit">0.00 ر.ي</h2>
+      </div>
+    </div>
+
+    <h3>آخر السندات المسجلة</h3>
+    <div id="recent-vouchers-list"></div>
   </div>
 
-  <div id="app-screen" class="hidden">
-    <header>
-      <div class="brand-header">
-        <img id="header-logo" src="" alt="لوجو">
-        <div>
-          <h1 id="header-store-name">Sohaib Pro</h1>
-          <span id="header-subtitle" style="font-size: 11px; color: var(--text-muted);">محلات الدشيمي للتجارة العامة</span>
-          <div id="user-email-display" style="font-size: 10px; color: #48cae4; margin-top: 2px;"></div>
-        </div>
-      </div>
-      <div style="display: flex; gap: 8px; align-items: center;">
-        <button class="theme-toggle" onclick="toggleTheme()">
-          <span id="theme-icon">🌙</span> <span id="theme-text">الوضع الداكن</span>
-        </button>
-        <button class="btn btn-sm" style="background:#00b4d8;" onclick="showTab('vouchers'); resetVoucherForm();">➕ سند جديد</button>
-        <button class="btn btn-sm btn-danger" onclick="logoutGoogle()">خروج</button>
-      </div>
-    </header>
-
-    <nav>
-      <button id="btn-home" class="active" onclick="showTab('home')">الرئيسية</button>
-      <button id="btn-clients" onclick="showTab('clients')">العملاء</button>
-      <button id="btn-vouchers" onclick="showTab('vouchers')">السندات</button>
-      <button id="btn-overdue" onclick="showTab('overdue')">⚠️ المتأخرين</button>
-      <button id="btn-reports" onclick="showTab('reports')">التقارير PDF</button>
-      <button id="btn-templates" onclick="showTab('templates')">الإعدادات والقوالب</button>
-      <button id="btn-settings" onclick="showTab('settings')">النسخ والاستعادة والمزامنة</button>
-    </nav>
-
-    <br>
-
-    <!-- 1. الرئيسية -->
-    <div id="tab-home">
-      <div class="grid-2">
-        <div class="card">
-          <p>صافي الإجمالي</p>
-          <h2 style="color: #48cae4;" id="net-total">0.00 ر.ي</h2>
-        </div>
-        <div class="card">
-          <p>عليه (لك)</p>
-          <h2 style="color: #00b4d8;" id="total-debit">0.00 ر.ي</h2>
-        </div>
-        <div class="card" style="grid-column: span 2;">
-          <p>له (عليك)</p>
-          <h2 style="color: #7209b7;" id="total-credit">0.00 ر.ي</h2>
-        </div>
-      </div>
-
-      <h3>آخر السندات المسجلة</h3>
-      <div id="recent-vouchers-list"></div>
+  <!-- 2. العملاء -->
+  <div id="tab-clients" class="hidden">
+    <div class="filter-row">
+      <input type="text" id="client-search" placeholder="بحث باسم العميل أو الرقم..." onkeyup="renderClients()">
+      <select id="client-filter-sort" onchange="renderClients()">
+        <option value="all">كل العملاء</option>
+        <option value="debit">عليهم (دَين لك)</option>
+        <option value="credit">لهم (دَين عليك)</option>
+        <option value="amount-desc">الأعلى رصيداً</option>
+      </select>
     </div>
 
-    <!-- 2. العملاء -->
-    <div id="tab-clients" class="hidden">
-      <div class="filter-row">
-        <input type="text" id="client-search" placeholder="بحث باسم العميل أو الرقم..." onkeyup="renderClients()">
-        <select id="client-filter-sort" onchange="renderClients()">
-          <option value="all">كل العملاء</option>
-          <option value="debit">عليهم (دَين لك)</option>
-          <option value="credit">لهم (دَين عليك)</option>
-          <option value="amount-desc">الأعلى رصيداً</option>
-        </select>
-      </div>
-
-      <div class="card" style="margin-bottom: 15px;">
-        <p id="form-client-title">إضافة عميل جديد</p>
-        <input type="hidden" id="edit-client-id">
-        <input type="text" id="new-client-name" placeholder="اسم العميل">
-        <input type="text" id="new-client-phone" placeholder="رقم الهاتف (مثال: 967770000000)">
-        <button class="btn" id="btn-save-client" onclick="saveClient()">حفظ العميل</button>
-      </div>
-
-      <div id="clients-list"></div>
+    <div class="card" style="margin-bottom: 15px;">
+      <p id="form-client-title">إضافة عميل جديد</p>
+      <input type="hidden" id="edit-client-id">
+      <input type="text" id="new-client-name" placeholder="اسم العميل">
+      <input type="text" id="new-client-phone" placeholder="رقم الهاتف (مثال: 967770000000)">
+      <button class="btn" id="btn-save-client" onclick="saveClient()">حفظ العميل</button>
     </div>
 
-    <!-- 3. السندات -->
-    <div id="tab-vouchers" class="hidden">
-      <div class="card" style="margin-bottom: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <p id="form-voucher-title" style="margin: 0; font-weight: bold;">إصدار سند جديد</p>
-          <button class="btn btn-sm btn-secondary" onclick="resetVoucherForm()">➕ فتح سند جديد</button>
-        </div>
-        
-        <input type="hidden" id="edit-voucher-id">
-        
-        <label style="font-size: 11px; color: var(--text-muted);">تصفية / بحث عن عميل:</label>
-        <input type="text" id="voucher-client-search" placeholder="اكتب اسم العميل للبحث السريع..." onkeyup="filterVoucherClients()">
-        
-        <select id="voucher-client-id" onchange="updateSelectedClientBalance()"></select>
-        
-        <!-- خانة إظهار رصيد العميل المباشر -->
-        <div id="live-balance-box" class="client-live-balance hidden">
-          <span>الرصيد الحالي للعميل:</span>
-          <strong id="live-balance-val">0.00 ر.ي</strong>
-        </div>
+    <div id="clients-list"></div>
+  </div>
 
-        <select id="voucher-type" onchange="toggleDueDateField()">
-          <option value="receipt">سند قبض (+ سداد دَين)</option>
-          <option value="payment">سند صرف (- دَين جديد)</option>
-        </select>
-        
-        <div id="due-date-container" class="hidden">
-          <label style="font-size: 11px; color: #ff8fa3;">موعد الاستحقاق / السداد:</label>
-          <input type="date" id="voucher-due-date">
-        </div>
-
-        <input type="number" id="voucher-amount" placeholder="المبلغ بالريال اليمني">
-        <input type="text" id="voucher-note" placeholder="البيان / السبب (سيتم تضمينه بالرسالة تلقائياً)">
-        <button class="btn" id="btn-save-voucher" onclick="saveVoucher()">تسجيل السند وإرسال واتساب فوراً</button>
+  <!-- 3. السندات -->
+  <div id="tab-vouchers" class="hidden">
+    <div class="card" style="margin-bottom: 15px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <p id="form-voucher-title" style="margin: 0; font-weight: bold;">إصدار سند جديد</p>
+        <button class="btn btn-sm btn-secondary" onclick="resetVoucherForm()">➕ فتح سند جديد</button>
       </div>
-
-      <h3>سجل السندات</h3>
-      <div id="vouchers-list"></div>
-    </div>
-
-    <!-- 4. المتأخرون عن السداد -->
-    <div id="tab-overdue" class="hidden">
-      <h3>⚠️ قائمة العملاء المتأخرين عن السداد</h3>
-      <div class="filter-row">
-        <input type="text" id="overdue-search" placeholder="بحث باسم العميل..." onkeyup="renderOverdue()">
-        <select id="overdue-filter-sort" onchange="renderOverdue()">
-          <option value="date">حسب تاريخ الاستحقاق</option>
-          <option value="amount">الأعلى مَبْلَغاً</option>
-        </select>
-      </div>
-      <br>
-      <div id="overdue-list"></div>
-    </div>
-
-    <!-- 5. التقارير -->
-    <div id="tab-reports" class="hidden">
-      <div class="print-header hidden">
-        <div>
-          <h2 id="print-store-name" style="margin:0;">محلات الدشيمي</h2>
-          <span id="print-subtitle" style="font-size:12px;">كشف حساب مالي منظّم</span>
-        </div>
-        <img id="print-logo" src="" alt="Logo">
-      </div>
-
-      <h3>تقارير الحسابات الرسمية</h3>
       
-      <div class="card" style="margin-bottom: 15px;">
-        <p>تقرير الحركة اليومية (مقبوضات ومصروفات)</p>
-        <input type="date" id="report-daily-date">
-        <button class="btn" onclick="generateDailyReport()">عرض تقرير الحركة اليومية</button>
-        <div id="daily-report-output" style="margin-top: 10px;"></div>
+      <input type="hidden" id="edit-voucher-id">
+      
+      <label style="font-size: 11px; color: var(--text-muted);">تصفية / بحث عن عميل:</label>
+      <input type="text" id="voucher-client-search" placeholder="اكتب اسم العميل للبحث السريع..." onkeyup="filterVoucherClients()">
+      
+      <select id="voucher-client-id" onchange="updateSelectedClientBalance()"></select>
+      
+      <!-- خانة إظهار رصيد العميل المباشر -->
+      <div id="live-balance-box" class="client-live-balance hidden">
+        <span>الرصيد الحالي للعميل:</span>
+        <strong id="live-balance-val">0.00 ر.ي</strong>
       </div>
 
-      <div class="card" style="margin-bottom: 15px;">
-        <p>عرض وتصدير كشف حساب تفصيلي لعميل</p>
-        <select id="report-client-select"></select>
-        <button class="btn" onclick="openClientStatement(document.getElementById('report-client-select').value)">عرض كشف الحساب</button>
+      <select id="voucher-type" onchange="toggleDueDateField()">
+        <option value="receipt">سند قبض (+ سداد دَين)</option>
+        <option value="payment">سند صرف (- دَين جديد)</option>
+      </select>
+      
+      <div id="due-date-container" class="hidden">
+        <label style="font-size: 11px; color: #ff8fa3;">موعد الاستحقاق / السداد:</label>
+        <input type="date" id="voucher-due-date">
       </div>
 
-      <div class="card">
-        <p>كشف الأرصدة الإجمالي كافة العملاء</p>
-        <br>
-        <button class="btn btn-sm" onclick="window.print()">🖨️ طباعة / تصدير PDF</button>
-        <div id="all-clients-report" style="margin-top: 15px;"></div>
-      </div>
+      <input type="number" id="voucher-amount" placeholder="المبلغ بالريال اليمني">
+      <input type="text" id="voucher-note" placeholder="البيان / السبب (سيتم تضمينه بالرسالة تلقائياً)">
+      <button class="btn" id="btn-save-voucher" onclick="saveVoucher()">تسجيل السند وإرسال واتساب فوراً</button>
     </div>
 
-    <!-- 6. الإعدادات والقوالب -->
-    <div id="tab-templates" class="hidden">
-      <div class="card" style="margin-bottom: 15px;">
-        <p>شعار واسم المحل (للطباعة والتقارير)</p>
-        <input type="text" id="setting-store-name" placeholder="اسم المحل الرئيسي">
-        <input type="text" id="setting-subtitle" placeholder="النص الفرعي (مثال: للتجارة العامة)">
-        <p style="font-size:11px; color:var(--text-muted);">رفع اللوقو / الشعار:</p>
-        <input type="file" id="setting-logo-input" accept="image/*" onchange="handleLogoUpload(event)">
-        <button class="btn" style="margin-top:5px;" onclick="saveStoreSettings()">حفظ بيانات الهوية</button>
+    <h3>سجل السندات</h3>
+    <div id="vouchers-list"></div>
+  </div>
+
+  <!-- 4. المتأخرون عن السداد -->
+  <div id="tab-overdue" class="hidden">
+    <h3>⚠️ قائمة العملاء المتأخرين عن السداد</h3>
+    <div class="filter-row">
+      <input type="text" id="overdue-search" placeholder="بحث باسم العميل..." onkeyup="renderOverdue()">
+      <select id="overdue-filter-sort" onchange="renderOverdue()">
+        <option value="date">حسب تاريخ الاستحقاق</option>
+        <option value="amount">الأعلى مَبْلَغاً</option>
+      </select>
+    </div>
+    <br>
+    <div id="overdue-list"></div>
+  </div>
+
+  <!-- 5. التقارير -->
+  <div id="tab-reports" class="hidden">
+    <div class="print-header hidden">
+      <div>
+        <h2 id="print-store-name" style="margin:0;">محلات الدشيمي</h2>
+        <span id="print-subtitle" style="font-size:12px;">كشف حساب مالي منظّم</span>
       </div>
-
-      <h3>محرر قوالب الرسائل</h3>
-      <p style="font-size:12px; color:var(--text-muted);">المتغيرات المدعومة: {name}، {amount}، {balance}، {date}، {note}، {dueDate}</p>
-
-      <div class="card" style="margin-bottom: 10px;">
-        <p>قالب سند القبض (سداد):</p>
-        <textarea id="tpl-receipt" rows="3"></textarea>
-      </div>
-
-      <div class="card" style="margin-bottom: 10px;">
-        <p>قالب سند الصرف (دين جديد):</p>
-        <textarea id="tpl-payment" rows="3"></textarea>
-      </div>
-
-      <div class="card" style="margin-bottom: 10px;">
-        <p>قالب التذكير العام بالدين والمتأخرات:</p>
-        <textarea id="tpl-reminder" rows="3"></textarea>
-      </div>
-
-      <button class="btn" onclick="saveTemplates()">حفظ القوالب</button>
+      <img id="print-logo" src="" alt="Logo">
     </div>
 
-    <!-- 7. النسخ واستعادة ومشاركة المزامنة -->
-    <div id="tab-settings" class="hidden">
-      <div class="card" style="margin-bottom: 15px; border-color: #00b4d8;">
-        <p style="color: #48cae4; font-weight: bold; margin-bottom: 5px;">🤝 مشاركة المزامنة الفورية مع شريك</p>
-        <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">أدخل البريد الإلكتروني لشريكك ليتمكن من الاطلاع على البيانات وتعديلها معك مباشرة:</p>
-        <input type="email" id="share-partner-email" placeholder="أدخل إيميل الشريك (Google Email)">
-        <button class="btn btn-secondary" onclick="shareWithPartner()">إضافة ومشاركة البيانات</button>
-      </div>
+    <h3>تقارير الحسابات الرسمية</h3>
+    
+    <div class="card" style="margin-bottom: 15px;">
+      <p>تقرير الحركة اليومية (مقبوضات ومصروفات)</p>
+      <input type="date" id="report-daily-date">
+      <button class="btn" onclick="generateDailyReport()">عرض تقرير الحركة اليومية</button>
+      <div id="daily-report-output" style="margin-top: 10px;"></div>
+    </div>
 
-      <div class="card">
-        <p>النسخ الاحتياطي والاستعادة (JSON)</p>
-        <br>
-        <button class="btn" onclick="exportData()">💾 تصدير نسخة احتياطية</button>
-        <br><br>
-        <label class="btn" style="background:#7209b7; text-align:center; display:block;">
-          📂 استعادة نسخة احتياطية
-          <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
-        </label>
-      </div>
+    <div class="card" style="margin-bottom: 15px;">
+      <p>عرض وتصدير كشف حساب تفصيلي لعميل</p>
+      <select id="report-client-select"></select>
+      <button class="btn" onclick="openClientStatement(document.getElementById('report-client-select').value)">عرض كشف الحساب</button>
+    </div>
+
+    <div class="card">
+      <p>كشف الأرصدة الإجمالي كافة العملاء</p>
+      <br>
+      <button class="btn btn-sm" onclick="window.print()">🖨️ طباعة / تصدير PDF</button>
+      <div id="all-clients-report" style="margin-top: 15px;"></div>
+    </div>
+  </div>
+
+  <!-- 6. الإعدادات والقوالب -->
+  <div id="tab-templates" class="hidden">
+    <div class="card" style="margin-bottom: 15px;">
+      <p>شعار واسم المحل (للطباعة والتقارير)</p>
+      <input type="text" id="setting-store-name" placeholder="اسم المحل الرئيسي">
+      <input type="text" id="setting-subtitle" placeholder="النص الفرعي (مثال: للتجارة العامة)">
+      <p style="font-size:11px; color:var(--text-muted);">رفع اللوقو / الشعار:</p>
+      <input type="file" id="setting-logo-input" accept="image/*" onchange="handleLogoUpload(event)">
+      <button class="btn" style="margin-top:5px;" onclick="saveStoreSettings()">حفظ بيانات الهوية</button>
+    </div>
+
+    <h3>محرر قوالب الرسائل</h3>
+    <p style="font-size:12px; color:var(--text-muted);">المتغيرات المدعومة: {name}، {amount}، {balance}، {date}، {note}، {dueDate}</p>
+
+    <div class="card" style="margin-bottom: 10px;">
+      <p>قالب سند القبض (سداد):</p>
+      <textarea id="tpl-receipt" rows="3"></textarea>
+    </div>
+
+    <div class="card" style="margin-bottom: 10px;">
+      <p>قالب سند الصرف (دين جديد):</p>
+      <textarea id="tpl-payment" rows="3"></textarea>
+    </div>
+
+    <div class="card" style="margin-bottom: 10px;">
+      <p>قالب التذكير العام بالدين والمتأخرات:</p>
+      <textarea id="tpl-reminder" rows="3"></textarea>
+    </div>
+
+    <button class="btn" onclick="saveTemplates()">حفظ القوالب</button>
+  </div>
+
+  <!-- 7. النسخ والاستعادة -->
+  <div id="tab-settings" class="hidden">
+    <div class="card">
+      <p>النسخ الاحتياطي والاستعادة (JSON)</p>
+      <br>
+      <button class="btn" onclick="exportData()">💾 تصدير نسخة احتياطية</button>
+      <br><br>
+      <label class="btn" style="background:#7209b7; text-align:center; display:block;">
+        📂 استعادة نسخة احتياطية
+        <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
+      </label>
     </div>
   </div>
 
@@ -369,28 +347,8 @@
     </div>
   </div>
 
-  <!-- Firebase SDKs للمزامنة السحابية -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCq8QwL1AmWpQmGUHeYNO1JyshqYMbmI_U",
-      authDomain: "sohaib-account.firebaseapp.com",
-      projectId: "sohaib-account",
-      storageBucket: "sohaib-account.firebasestorage.app",
-      messagingSenderId: "169288303931",
-      appId: "1:169288303931:web:63dfe05c76761018b8e31e"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const firestore = firebase.firestore();
-
     const SECURITY_PIN = "1234";
-    let currentUser = null;
-    let activeDocId = null;
 
     let db = {
       clients: JSON.parse(localStorage.getItem('pro_clients')) || [
@@ -408,91 +366,8 @@
         subtitle: "كشف حساب مالي بالريال اليمني",
         logo: ""
       },
-      theme: localStorage.getItem('pro_theme') || 'dark',
-      sharedWith: []
+      theme: localStorage.getItem('pro_theme') || 'dark'
     };
-
-    // مراقبة الدخول والمزامنة الحية
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('user-email-display').innerText = user.email;
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('app-screen').classList.remove('hidden');
-        setupRealtimeSync();
-      } else {
-        currentUser = null;
-        document.getElementById('login-screen').classList.remove('hidden');
-        document.getElementById('app-screen').classList.add('hidden');
-      }
-    });
-
-    function loginWithGoogle() {
-      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err => alert(err.message));
-    }
-
-    function logoutGoogle() {
-      auth.signOut();
-    }
-
-    function setupRealtimeSync() {
-      if (!currentUser) return;
-
-      firestore.collection('accounts').where('sharedWith', 'array-contains', currentUser.email.toLowerCase())
-        .onSnapshot(snapshot => {
-          if (!snapshot.empty) {
-            const doc = snapshot.docs[0];
-            activeDocId = doc.id;
-            updateLocalDataFromCloud(doc.data());
-          } else {
-            activeDocId = currentUser.uid;
-            firestore.collection('accounts').doc(currentUser.uid).onSnapshot(doc => {
-              if (doc.exists) {
-                updateLocalDataFromCloud(doc.data());
-              } else {
-                saveDataToCloud();
-              }
-            });
-          }
-        });
-    }
-
-    function updateLocalDataFromCloud(data) {
-      if (data.clients) db.clients = data.clients;
-      if (data.vouchers) db.vouchers = data.vouchers;
-      if (data.templates) db.templates = data.templates;
-      if (data.store) db.store = data.store;
-      if (data.sharedWith) db.sharedWith = data.sharedWith;
-      
-      localStorage.setItem('pro_clients', JSON.stringify(db.clients));
-      localStorage.setItem('pro_vouchers', JSON.stringify(db.vouchers));
-      localStorage.setItem('pro_templates', JSON.stringify(db.templates));
-      localStorage.setItem('pro_store', JSON.stringify(db.store));
-      refreshUI();
-    }
-
-    function saveDataToCloud() {
-      if (!currentUser || !activeDocId) return;
-      firestore.collection('accounts').doc(activeDocId).set({
-        clients: db.clients,
-        vouchers: db.vouchers,
-        templates: db.templates,
-        store: db.store,
-        sharedWith: db.sharedWith || []
-      }, { merge: true });
-    }
-
-    function shareWithPartner() {
-      const email = document.getElementById('share-partner-email').value.trim().toLowerCase();
-      if (!email) return alert('أدخل البريد الإلكتروني لشريكك');
-      if (!db.sharedWith) db.sharedWith = [];
-      if (!db.sharedWith.includes(email)) {
-        db.sharedWith.push(email);
-        saveData();
-        alert('تمت إضافة البريد بنجاح! سيتم المزامنة تلقائياً مع هذا الحساب.');
-        document.getElementById('share-partner-email').value = '';
-      }
-    }
 
     function authenticate() {
       const pin = prompt('يرجى إدخال رمز الأمان لإتمام العملية:');
@@ -526,7 +401,6 @@
       localStorage.setItem('pro_vouchers', JSON.stringify(db.vouchers));
       localStorage.setItem('pro_templates', JSON.stringify(db.templates));
       localStorage.setItem('pro_store', JSON.stringify(db.store));
-      saveDataToCloud();
       refreshUI();
     }
 
@@ -657,6 +531,7 @@
       updateSelectedClientBalance();
     }
 
+    // إظهار رصيد العميل المختار مباشرة في خانة السند
     function updateSelectedClientBalance() {
       const clientId = document.getElementById('voucher-client-id').value;
       const box = document.getElementById('live-balance-box');
@@ -813,6 +688,7 @@
       window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
+    // إرسال كشف حساب كاملاً ومفصلاً عبر الواتساب
     function sendFullStatementWA(clientId) {
       const client = db.clients.find(c => c.id === clientId);
       if (!client || !client.phone) return alert('يرجى التأكد من تسجيل رقم الهاتف للعميل أولاً!');
@@ -912,68 +788,6 @@
       document.getElementById('statement-modal').classList.add('hidden');
     }
 
-    function renderAllClientsReport() {
-      const container = document.getElementById('all-clients-report');
-      let rows = '';
-      db.clients.forEach(c => {
-        const label = c.balance > 0 ? 'عليه' : c.balance < 0 ? 'له' : 'متعادل';
-        rows += `
-          <tr>
-            <td>${c.name}</td>
-            <td>${c.phone || '-'}</td>
-            <td>${Math.abs(c.balance).toFixed(2)} ر.ي</td>
-            <td>${label}</td>
-            <td>${c.dueDate || '-'}</td>
-          </tr>`;
-      });
-
-      container.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>العميل</th>
-              <th>الهاتف</th>
-              <th>الرصيد</th>
-              <th>الحالة</th>
-              <th>تاريخ الاستحقاق</th>
-            </tr>
-          </thead>
-          <tbody>${rows || '<tr><td colspan="5">لا يوجد عملاء</td></tr>'}</tbody>
-        </table>
-      `;
-    }
-
-    function exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `sohaib_pro_backup_${new Date().toISOString().split('T')[0]}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    }
-
-    function importData(e) {
-      if (!authenticate()) return;
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          const imported = JSON.parse(evt.target.result);
-          if (imported.clients) db.clients = imported.clients;
-          if (imported.vouchers) db.vouchers = imported.vouchers;
-          if (imported.templates) db.templates = imported.templates;
-          if (imported.store) db.store = imported.store;
-          saveData();
-          alert('تمت استعادة النسخة الاحتياطية بنجاح والمزامنة سحابياً!');
-        } catch (err) {
-          alert('ملف غير صالح!');
-        }
-      };
-      reader.readAsText(file);
-    }
-
     function refreshUI() {
       let debit = 0, credit = 0;
       db.clients.forEach(c => {
@@ -1001,9 +815,7 @@
       loadStoreSettings();
       applyTheme(db.theme);
 
-      if (!document.getElementById('report-daily-date').value) {
-        document.getElementById('report-daily-date').value = new Date().toISOString().split('T')[0];
-      }
+      document.getElementById('report-daily-date').value = new Date().toISOString().split('T')[0];
     }
 
     function renderClients() {
@@ -1043,36 +855,6 @@
       });
     }
 
-    function renderVouchers() {
-      const container = document.getElementById('vouchers-list');
-      const recentContainer = document.getElementById('recent-vouchers-list');
-
-      container.innerHTML = '';
-      recentContainer.innerHTML = '';
-
-      db.vouchers.forEach((v, index) => {
-        const itemHtml = `
-          <div class="item-card ${v.type==='receipt'?'debit':'credit'}">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div>
-                <strong>${v.clientName}</strong>
-                <small style="display:block; color:var(--text-muted);">${v.date} | ${v.note}</small>
-                ${v.dueDate ? `<small style="display:block; color:#ff8fa3;">📅 استحقاق: ${v.dueDate}</small>` : ''}
-              </div>
-              <span class="badge ${v.type==='receipt'?'bg-green':'bg-red'}">${v.amount.toFixed(2)} ر.ي (${v.type==='receipt'?'قبض':'صرف'})</span>
-            </div>
-            <div style="margin-top:10px; display:flex; gap:5px; justify-content:flex-end;">
-              <button class="btn btn-sm btn-wa" onclick="sendVoucherWA('${v.id}')">📲 إرسال واتساب</button>
-              <button class="btn btn-sm" onclick="editVoucher('${v.id}')">✏️ تعديل</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteVoucher('${v.id}')">🗑️</button>
-            </div>
-          </div>`;
-
-        container.innerHTML += itemHtml;
-        if (index < 5) recentContainer.innerHTML += itemHtml;
-      });
-    }
-
     function renderOverdue() {
       const container = document.getElementById('overdue-list');
       const search = document.getElementById('overdue-search').value.toLowerCase();
@@ -1081,39 +863,4 @@
 
       container.innerHTML = '';
 
-      let overdueClients = db.clients.filter(c => c.balance > 0 && c.dueDate && c.dueDate <= today && c.name.toLowerCase().includes(search));
-
-      if (sort === 'amount') {
-        overdueClients.sort((a, b) => b.balance - a.balance);
-      } else {
-        overdueClients.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-      }
-
-      overdueClients.forEach(c => {
-        container.innerHTML += `
-          <div class="item-card overdue">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div>
-                <strong style="color:#ff8fa3;">⚠️ ${c.name}</strong>
-                <small style="display:block; color:var(--text-muted);">${c.phone || 'بدون رقم'}</small>
-                <small style="display:block; color:#ff8fa3;">📅 تاريخ الاستحقاق: ${c.dueDate}</small>
-              </div>
-              <span class="badge bg-red">${c.balance.toFixed(2)} ر.ي</span>
-            </div>
-            <div style="margin-top:10px; display:flex; gap:5px; justify-content:flex-end;">
-              <button class="btn btn-sm btn-wa" onclick="sendReminderWA('${c.id}')">💬 إرسال تذكير</button>
-              <button class="btn btn-sm" style="background:#00b4d8;" onclick="createVoucherForClient('${c.id}')">➕ تحصيل سند</button>
-            </div>
-          </div>`;
-      });
-
-      if (overdueClients.length === 0) {
-        container.innerHTML = '<p style="text-align:center; color:var(--text-muted);">لا يوجد عملاء متأخرون عن السداد حالياً 👍</p>';
-      }
-    }
-
-    // التشغيل الأول والتهيئية
-    refreshUI();
-  </script>
-</body>
-</html>
+      let overdueClients = db.clients.filter(c => c.balance > 0 && c.dueDate && c.dueDate <= today && c.name.toLowerCase(
