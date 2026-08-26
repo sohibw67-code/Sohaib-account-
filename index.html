@@ -5,46 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sohaib Pro</title>
   <style>
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
-    body { margin: 0; background-color: #0b132b; color: #ffffff; padding: 15px; padding-bottom: 80px; }
-    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1c2541; padding-bottom: 10px; margin-bottom: 15px; }
+    :root {
+      --bg-color: #0b132b;
+      --card-bg: #1c2541;
+      --border-color: #2a385b;
+      --text-color: #ffffff;
+      --text-muted: #a0aec0;
+      --input-bg: #0b132b;
+      --header-border: #1c2541;
+      --th-bg: #0b132b;
+    }
+
+    [data-theme="light"] {
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --border-color: #e2e8f0;
+      --text-color: #1a202c;
+      --text-muted: #718096;
+      --input-bg: #ffffff;
+      --header-border: #cbd5e0;
+      --th-bg: #edf2f7;
+    }
+
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.2s, color 0.2s; }
+    body { margin: 0; background-color: var(--bg-color); color: var(--text-color); padding: 15px; padding-bottom: 80px; }
+    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--header-border); padding-bottom: 10px; margin-bottom: 15px; }
     .brand-header { display: flex; align-items: center; gap: 10px; }
     .brand-header img { max-height: 40px; border-radius: 4px; display: none; }
     h1 { color: #48cae4; margin: 0; font-size: 20px; }
     
+    .theme-toggle { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+
     nav { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
-    nav button { background-color: #1c2541; color: #a0aec0; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; white-space: nowrap; }
-    nav button.active { background-color: #00b4d8; color: #fff; font-weight: bold; }
+    nav button { background-color: var(--card-bg); color: var(--text-muted); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+    nav button.active { background-color: #00b4d8; color: #fff; font-weight: bold; border-color: #00b4d8; }
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-    .card { background-color: #1c2541; padding: 12px; border-radius: 8px; border: 1px solid #2a385b; }
-    .card p { margin: 0; color: #a0aec0; font-size: 12px; }
+    .card { background-color: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .card p { margin: 0; color: var(--text-muted); font-size: 12px; }
     .card h2 { margin: 5px 0 0 0; font-size: 18px; }
     
-    .item-card { background-color: #1c2541; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-right: 4px solid #a0aec0; }
-    .item-card.credit { border-color: #7209b7; }
-    .item-card.debit { border-color: #00b4d8; }
+    .item-card { background-color: var(--card-bg); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-right: 4px solid var(--text-muted); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color); }
+    .item-card.credit { border-right-color: #7209b7; }
+    .item-card.debit { border-right-color: #00b4d8; }
 
     .badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-    .bg-green { background-color: #27272a; color: #38a169; }
-    .bg-blue { background-color: #27272a; color: #00b4d8; }
-    .bg-red { background-color: #27272a; color: #e53e3e; }
+    .bg-green { background-color: #1b4332; color: #52b788; }
+    .bg-blue { background-color: #03045e; color: #90e0ef; }
+    .bg-red { background-color: #4a0e17; color: #ff8fa3; }
 
-    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 10px; background-color: #0b132b; border: 1px solid #2a385b; color: #fff; border-radius: 6px; font-size: 13px; }
+    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 10px; background-color: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 6px; font-size: 13px; }
     .btn { background-color: #00b4d8; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; }
     .btn-danger { background-color: #e53e3e; }
     .btn-wa { background-color: #25d366; color: #fff; }
     .btn-sm { width: auto; padding: 4px 8px; font-size: 12px; display: inline-flex; align-items: center; gap: 3px; }
 
     .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 99; }
-    .modal-content { background: #1c2541; padding: 20px; border-radius: 10px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal-content { background: var(--card-bg); padding: 20px; border-radius: 10px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-color); }
 
     .hidden { display: none; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-    th, td { border: 1px solid #2a385b; padding: 8px; text-align: center; }
-    th { background: #0b132b; color: #48cae4; }
+    th, td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
+    th { background: var(--th-bg); color: #48cae4; }
 
-    /* تنسيق الطباعة وتقارير PDF */
     @media print {
       body { background-color: #fff !important; color: #000 !important; padding: 0; }
       nav, header button, .btn, input, select, textarea, #tab-home, #tab-clients, #tab-vouchers, #tab-templates, #tab-settings { display: none !important; }
@@ -65,10 +88,15 @@
       <img id="header-logo" src="" alt="لوجو">
       <div>
         <h1 id="header-store-name">Sohaib Pro</h1>
-        <span id="header-subtitle" style="font-size: 11px; color: #a0aec0;">محلات الدشيمي</span>
+        <span id="header-subtitle" style="font-size: 11px; color: var(--text-muted);">محلات الدشيمي</span>
       </div>
     </div>
-    <button class="btn btn-sm" style="background:#00b4d8;" onclick="showTab('vouchers')">➕ سند جديد</button>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">🌙</span> <span id="theme-text">الوضع الداكن</span>
+      </button>
+      <button class="btn btn-sm" style="background:#00b4d8;" onclick="showTab('vouchers')">➕ سند جديد</button>
+    </div>
   </header>
 
   <nav>
@@ -123,13 +151,18 @@
     <div class="card" style="margin-bottom: 15px;">
       <p id="form-voucher-title">إصدار سند جديد</p>
       <input type="hidden" id="edit-voucher-id">
+      
+      <!-- تصفية العملاء عند إدخال السندات -->
+      <label style="font-size: 11px; color: var(--text-muted);">تصفية / بحث عن عميل:</label>
+      <input type="text" id="voucher-client-search" placeholder="اكتب اسم العميل للبحث السريع..." onkeyup="filterVoucherClients()">
+      
       <select id="voucher-client-id"></select>
       <select id="voucher-type">
         <option value="receipt">سند قبض (+ سداد دَين)</option>
         <option value="payment">سند صرف (- دَين جديد)</option>
       </select>
       <input type="number" id="voucher-amount" placeholder="المبلغ بالريال اليمني">
-      <input type="text" id="voucher-note" placeholder="البيان / السبب (سيظهر بالرسالة)">
+      <input type="text" id="voucher-note" placeholder="البيان / السبب (سيتم تضمينه بالرسالة تلقائياً)">
       <button class="btn" id="btn-save-voucher" onclick="saveVoucher()">تسجيل السند وإرسال واتساب فوراً</button>
     </div>
 
@@ -168,13 +201,13 @@
       <p>شعار واسم المحل (للطباعة والتقارير)</p>
       <input type="text" id="setting-store-name" placeholder="اسم المحل الرئيسي">
       <input type="text" id="setting-subtitle" placeholder="النص الفرعي (مثال: للتجارة العامة)">
-      <p style="font-size:11px; color:#a0aec0;">رفع اللوقو / الشعار:</p>
+      <p style="font-size:11px; color:var(--text-muted);">رفع اللوقو / الشعار:</p>
       <input type="file" id="setting-logo-input" accept="image/*" onchange="handleLogoUpload(event)">
       <button class="btn" style="margin-top:5px;" onclick="saveStoreSettings()">حفظ بيانات الهوية</button>
     </div>
 
     <h3>محرر قوالب الرسائل</h3>
-    <p style="font-size:12px; color:#a0aec0;">المتغيرات المدعومة: {name}، {amount}، {balance}، {date}، {note}</p>
+    <p style="font-size:12px; color:var(--text-muted);">المتغيرات المدعومة: {name}، {amount}، {balance}، {date}، {note}</p>
 
     <div class="card" style="margin-bottom: 10px;">
       <p>قالب سند القبض (سداد):</p>
@@ -211,11 +244,11 @@
   <!-- نافذة كشف الحساب -->
   <div id="statement-modal" class="modal hidden">
     <div class="modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a385b; padding-bottom: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
         <h3 id="modal-client-name" style="margin: 0; color: #48cae4;"></h3>
         <button class="btn btn-sm btn-danger" onclick="closeModal()">✕ إغلاق</button>
       </div>
-      <p id="modal-client-phone" style="color: #a0aec0; font-size: 12px;"></p>
+      <p id="modal-client-phone" style="color: var(--text-muted); font-size: 12px;"></p>
       <h4 id="modal-client-balance"></h4>
 
       <table>
@@ -254,8 +287,30 @@
         name: "محلات الدشيمي للتجارة العامة",
         subtitle: "كشف حساب مالي بالريال اليمني",
         logo: ""
-      }
+      },
+      theme: localStorage.getItem('pro_theme') || 'dark'
     };
+
+    // إدارة السمة (الوضع الفاتح والداكن)
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      const icon = document.getElementById('theme-icon');
+      const text = document.getElementById('theme-text');
+      if (theme === 'light') {
+        icon.innerText = '☀️';
+        text.innerText = 'الوضع الفاتح';
+      } else {
+        icon.innerText = '🌙';
+        text.innerText = 'الوضع الداكن';
+      }
+      localStorage.setItem('pro_theme', theme);
+      db.theme = theme;
+    }
+
+    function toggleTheme() {
+      const newTheme = db.theme === 'dark' ? 'light' : 'dark';
+      applyTheme(newTheme);
+    }
 
     function saveData() {
       localStorage.setItem('pro_clients', JSON.stringify(db.clients));
@@ -366,6 +421,16 @@
       }
     }
 
+    // تصفية قائمة العملاء في نموذج السندات
+    function filterVoucherClients() {
+      const query = document.getElementById('voucher-client-search').value.toLowerCase();
+      const select = document.getElementById('voucher-client-id');
+      select.innerHTML = '<option value="">اختر العميل...</option>';
+      db.clients.filter(c => c.name.toLowerCase().includes(query)).forEach(c => {
+        select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+      });
+    }
+
     // إدارة السندات + الإرسال التلقائي
     function saveVoucher() {
       const id = document.getElementById('edit-voucher-id').value;
@@ -434,6 +499,8 @@
       document.getElementById('edit-voucher-id').value = '';
       document.getElementById('voucher-amount').value = '';
       document.getElementById('voucher-note').value = '';
+      document.getElementById('voucher-client-search').value = '';
+      filterVoucherClients();
       document.getElementById('form-voucher-title').innerText = 'إصدار سند جديد';
       document.getElementById('btn-save-voucher').innerText = 'تسجيل السند وإرسال واتساب فوراً';
     }
@@ -503,7 +570,7 @@
           tbody.innerHTML += `
             <tr>
               <td>${v.date}</td>
-              <td style="color:${v.type==='receipt'?'#38a169':'#e53e3e'}">${v.type==='receipt'?'قبض':'صرف'}</td>
+              <td style="color:${v.type==='receipt'?'#52b788':'#ff8fa3'}">${v.type==='receipt'?'قبض':'صرف'}</td>
               <td>${v.note || '-'}</td>
               <td>${v.amount} ر.ي</td>
             </tr>`;
@@ -529,13 +596,12 @@
       document.getElementById('total-credit').innerText = credit.toFixed(2) + ' ر.ي';
       document.getElementById('net-total').innerText = (debit - credit).toFixed(2) + ' ر.ي';
 
-      const select = document.getElementById('voucher-client-id');
+      filterVoucherClients();
+
       const selectReport = document.getElementById('report-client-select');
-      select.innerHTML = '<option value="">اختر العميل...</option>';
       selectReport.innerHTML = '<option value="">اختر العميل...</option>';
 
       db.clients.forEach(c => {
-        select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
         selectReport.innerHTML += `<option value="${c.id}">${c.name}</option>`;
       });
 
@@ -544,6 +610,7 @@
       renderAllClientsReport();
       loadTemplates();
       loadStoreSettings();
+      applyTheme(db.theme);
     }
 
     function renderClients() {
@@ -560,7 +627,7 @@
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
               <div onclick="openClientStatement('${c.id}')" style="cursor:pointer;">
                 <strong style="color:#48cae4;">👁️ ${c.name}</strong>
-                <small style="display:block; color:#a0aec0;">${c.phone || 'بدون رقم'}</small>
+                <small style="display:block; color:var(--text-muted);">${c.phone || 'بدون رقم'}</small>
               </div>
               <span class="badge ${c.balance > 0 ? 'bg-blue' : 'bg-green'}">${Math.abs(c.balance).toFixed(2)} ر.ي (${label})</span>
             </div>
@@ -580,14 +647,14 @@
       recentContainer.innerHTML = '';
 
       db.vouchers.forEach((v, index) => {
-        const sentBadge = v.sent ? '<span style="color:#38a169; font-size:10px;">✓ تم الإرسال</span>' : '<span style="color:#e53e3e; font-size:10px;">✕ لم يرسل</span>';
+        const sentBadge = v.sent ? '<span style="color:#52b788; font-size:10px;">✓ تم الإرسال</span>' : '<span style="color:#ff8fa3; font-size:10px;">✕ لم يرسل</span>';
 
         const html = `
           <div class="item-card">
             <div style="display:flex; justify-content:space-between;">
               <div>
                 <strong>${v.clientName}</strong> - <small>${v.note || 'بدون بيان'}</small>
-                <small style="display:block; color:#a0aec0;">${v.date} | ${sentBadge}</small>
+                <small style="display:block; color:var(--text-muted);">${v.date} | ${sentBadge}</small>
               </div>
               <div>
                 <span class="badge ${v.type==='receipt'?'bg-green':'bg-red'}">${v.type==='receipt'?'+':'-'} ${v.amount} ر.ي</span>
