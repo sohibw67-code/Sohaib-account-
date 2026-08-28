@@ -77,12 +77,12 @@
     .btn-sm { width: auto; padding: 4px 8px; font-size: 12px; display: inline-flex; align-items: center; gap: 3px; }
 
     .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 99; }
-    .modal-content { background: var(--card-bg); padding: 20px; border-radius: 10px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-color); }
+    .modal-content { background: var(--card-bg); padding: 20px; border-radius: 10px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-color); }
 
     .hidden { display: none; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
     th, td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
-    th { background: var(--th-bg); color: #48cae4; }
+    th { background: var(--th-bg); color: #48cae4; position: sticky; top: 0; z-index: 10; }
 
     .client-live-balance {
       background-color: var(--input-bg);
@@ -199,7 +199,6 @@
       
       <select id="voucher-client-id" onchange="updateSelectedClientBalance()"></select>
       
-      <!-- خانة إظهار رصيد العميل المباشر -->
       <div id="live-balance-box" class="client-live-balance hidden">
         <span>الرصيد الحالي للعميل:</span>
         <strong id="live-balance-val">0.00 ر.ي</strong>
@@ -221,6 +220,7 @@
     </div>
 
     <h3>سجل السندات</h3>
+    <input type="text" id="vouchers-search" placeholder="بحث في السندات (اسم العميل، البيان، أو المبلغ)..." onkeyup="renderVouchers()">
     <div id="vouchers-list"></div>
   </div>
 
@@ -277,9 +277,11 @@
       <p>شعار واسم المحل (للطباعة والتقارير)</p>
       <input type="text" id="setting-store-name" placeholder="اسم المحل الرئيسي">
       <input type="text" id="setting-subtitle" placeholder="النص الفرعي (مثال: للتجارة العامة)">
+      <p style="font-size:11px; color:var(--text-muted);">رمز الأمان لتغيير وحذف الحسابات السريعة:</p>
+      <input type="password" id="setting-pin" placeholder="رمز الأمان">
       <p style="font-size:11px; color:var(--text-muted);">رفع اللوقو / الشعار:</p>
       <input type="file" id="setting-logo-input" accept="image/*" onchange="handleLogoUpload(event)">
-      <button class="btn" style="margin-top:5px;" onclick="saveStoreSettings()">حفظ بيانات الهوية</button>
+      <button class="btn" style="margin-top:5px;" onclick="saveStoreSettings()">حفظ بيانات الهوية والأمان</button>
     </div>
 
     <h3>محرر قوالب الرسائل</h3>
@@ -306,9 +308,11 @@
   <!-- 7. النسخ والاستعادة -->
   <div id="tab-settings" class="hidden">
     <div class="card">
-      <p>النسخ الاحتياطي والاستعادة (JSON)</p>
+      <p>النسخ الاحتياطي والاستعادة والمشاركة (JSON)</p>
       <br>
-      <button class="btn" onclick="exportData()">💾 تصدير نسخة احتياطية</button>
+      <button class="btn" onclick="exportData()">💾 تنزيل نسخة احتياطية</button>
+      <br><br>
+      <button class="btn" style="background:#00b4d8;" onclick="shareData()">📲 مشاركة النسخة عبر الواتساب/تطبيقات أخرى</button>
       <br><br>
       <label class="btn" style="background:#7209b7; text-align:center; display:block;">
         📂 استعادة نسخة احتياطية
@@ -334,6 +338,7 @@
             <th>النوع</th>
             <th>البيان</th>
             <th>المبلغ</th>
+            <th>الرصيد التراكمي</th>
           </tr>
         </thead>
         <tbody id="modal-vouchers-body"></tbody>
@@ -348,8 +353,6 @@
   </div>
 
   <script>
-    const SECURITY_PIN = "1234";
-
     let db = {
       clients: JSON.parse(localStorage.getItem('pro_clients')) || [
         { id: '1', name: 'زيادة وعجز الصندوق', phone: '', balance: -5.65, dueDate: '' },
@@ -364,14 +367,21 @@
       store: JSON.parse(localStorage.getItem('pro_store')) || {
         name: "محلات الدشيمي للتجارة العامة",
         subtitle: "كشف حساب مالي بالريال اليمني",
-        logo: ""
+        logo: "",
+        pin: "1234"
       },
       theme: localStorage.getItem('pro_theme') || 'dark'
     };
 
+    // دالة تنسيق الأرقام بفواصل الآلاف
+    function formatCurrency(val) {
+      const num = parseFloat(val) || 0;
+      return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     function authenticate() {
       const pin = prompt('يرجى إدخال رمز الأمان لإتمام العملية:');
-      if (pin === SECURITY_PIN) return true;
+      if (pin === (db.store.pin || "1234")) return true;
       alert('رمز الأمان غير صحيح!');
       return false;
     }
@@ -436,13 +446,15 @@
     function saveStoreSettings() {
       db.store.name = document.getElementById('setting-store-name').value || "محلات الدشيمي";
       db.store.subtitle = document.getElementById('setting-subtitle').value || "";
+      db.store.pin = document.getElementById('setting-pin').value || "1234";
       saveData();
-      alert('تم حفظ بيانات الهوية بنجاح!');
+      alert('تم حفظ بيانات الهوية الأمان بنجاح!');
     }
 
     function loadStoreSettings() {
       document.getElementById('setting-store-name').value = db.store.name;
       document.getElementById('setting-subtitle').value = db.store.subtitle;
+      document.getElementById('setting-pin').value = db.store.pin || "1234";
       document.getElementById('header-store-name').innerText = db.store.name;
       document.getElementById('header-subtitle').innerText = db.store.subtitle;
       document.getElementById('print-store-name').innerText = db.store.name;
@@ -471,10 +483,14 @@
 
     function saveClient() {
       const id = document.getElementById('edit-client-id').value;
-      const name = document.getElementById('new-client-name').value;
-      const phone = document.getElementById('new-client-phone').value;
+      const name = document.getElementById('new-client-name').value.trim();
+      const phone = document.getElementById('new-client-phone').value.trim();
 
       if (!name) return alert('يرجى كتابة اسم العميل');
+
+      // التحقق من تكرار الاسم
+      const exists = db.clients.find(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== id);
+      if (exists) return alert('يوجد عميل مسجل بهذا الاسم مسبقاً!');
 
       if (id) {
         if (!authenticate()) return;
@@ -531,7 +547,6 @@
       updateSelectedClientBalance();
     }
 
-    // إظهار رصيد العميل المختار مباشرة في خانة السند
     function updateSelectedClientBalance() {
       const clientId = document.getElementById('voucher-client-id').value;
       const box = document.getElementById('live-balance-box');
@@ -545,7 +560,7 @@
       const client = db.clients.find(c => c.id === clientId);
       if (client) {
         const label = client.balance > 0 ? 'عليه (لك)' : client.balance < 0 ? 'له (عليك)' : 'خالي';
-        val.innerText = `${Math.abs(client.balance).toFixed(2)} ر.ي (${label})`;
+        val.innerText = `${formatCurrency(Math.abs(client.balance))} ر.ي (${label})`;
         box.classList.remove('hidden');
       } else {
         box.classList.add('hidden');
@@ -664,10 +679,10 @@
       
       let msg = tpl
         .replace(/{name}/g, client.name)
-        .replace(/{amount}/g, v.amount)
+        .replace(/{amount}/g, formatCurrency(v.amount))
         .replace(/{note}/g, v.note || 'بدون بيان')
         .replace(/{dueDate}/g, v.dueDate || 'غير محدد')
-        .replace(/{balance}/g, Math.abs(client.balance).toFixed(2))
+        .replace(/{balance}/g, formatCurrency(Math.abs(client.balance)))
         .replace(/{date}/g, v.date);
 
       v.sent = true;
@@ -682,18 +697,17 @@
 
       let msg = db.templates.reminder
         .replace(/{name}/g, client.name)
-        .replace(/{balance}/g, Math.abs(client.balance).toFixed(2))
+        .replace(/{balance}/g, formatCurrency(Math.abs(client.balance)))
         .replace(/{dueDate}/g, client.dueDate || 'غير محدد');
 
       window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // إرسال كشف حساب كاملاً ومفصلاً عبر الواتساب
     function sendFullStatementWA(clientId) {
       const client = db.clients.find(c => c.id === clientId);
       if (!client || !client.phone) return alert('يرجى التأكد من تسجيل رقم الهاتف للعميل أولاً!');
 
-      const clientVouchers = db.vouchers.filter(v => v.clientId === clientId);
+      const clientVouchers = db.vouchers.filter(v => v.clientId === clientId).reverse();
       let statementText = `📋 *كشف حساب مالي - ${db.store.name}*\n`;
       statementText += `العميل: *${client.name}*\n`;
       statementText += `--------------------------------\n`;
@@ -701,15 +715,20 @@
       if (clientVouchers.length === 0) {
         statementText += `لا توجد حركات مسجلة سابقاً.\n`;
       } else {
+        let runningBalance = 0;
         clientVouchers.forEach((v, idx) => {
+          if (v.type === 'payment') runningBalance += v.amount;
+          else runningBalance -= v.amount;
+
           const typeStr = v.type === 'receipt' ? 'قبض (+)' : 'صرف (-)';
-          statementText += `${idx + 1}. [${v.date}] ${typeStr}: ${v.amount} ر.ي | ${v.note}\n`;
+          const balLabel = runningBalance > 0 ? 'عليه' : runningBalance < 0 ? 'له' : 'متعادل';
+          statementText += `${idx + 1}. [${v.date}] ${typeStr}: ${formatCurrency(v.amount)} ر.ي | ${v.note} | الرصيد: ${formatCurrency(Math.abs(runningBalance))} (${balLabel})\n`;
         });
       }
 
       const label = client.balance > 0 ? 'عليكم (دَين)' : client.balance < 0 ? 'لكم' : 'متعادل';
       statementText += `--------------------------------\n`;
-      statementText += `*الرصيد النهائي الحالي:* ${Math.abs(client.balance).toFixed(2)} ر.ي (${label})\n`;
+      statementText += `*الرصيد النهائي الحالي:* ${formatCurrency(Math.abs(client.balance))} ر.ي (${label})\n`;
       if (client.dueDate) statementText += `تاريخ الاستحقاق: ${client.dueDate}\n`;
       statementText += `\nشكراً لتعاملكم معنا!`;
 
@@ -736,14 +755,14 @@
             <td>${v.clientName}</td>
             <td style="color:${v.type==='receipt'?'#52b788':'#ff8fa3'}">${v.type==='receipt'?'قبض':'صرف'}</td>
             <td>${v.note}</td>
-            <td>${v.amount} ر.ي</td>
+            <td>${formatCurrency(v.amount)} ر.ي</td>
           </tr>`;
       });
 
       output.innerHTML = `
         <div class="grid-2" style="margin-top:10px;">
-          <div style="background:var(--th-bg); padding:8px; border-radius:5px;">إجمالي المقبوضات: <strong style="color:#52b788;">${receiptsTotal.toFixed(2)} ر.ي</strong></div>
-          <div style="background:var(--th-bg); padding:8px; border-radius:5px;">إجمالي المصروفات: <strong style="color:#ff8fa3;">${paymentsTotal.toFixed(2)} ر.ي</strong></div>
+          <div style="background:var(--th-bg); padding:8px; border-radius:5px;">إجمالي المقبوضات: <strong style="color:#52b788;">${formatCurrency(receiptsTotal)} ر.ي</strong></div>
+          <div style="background:var(--th-bg); padding:8px; border-radius:5px;">إجمالي المصروفات: <strong style="color:#ff8fa3;">${formatCurrency(paymentsTotal)} ر.ي</strong></div>
         </div>
         <table>
           <thead><tr><th>العميل</th><th>النوع</th><th>البيان</th><th>المبلغ</th></tr></thead>
@@ -754,28 +773,41 @@
       `;
     }
 
+    // كشف الحساب بالتراكم الترتيبي الصحيح
     function openClientStatement(clientId) {
       const client = db.clients.find(c => c.id === clientId);
       if (!client) return;
 
       document.getElementById('modal-client-name').innerText = client.name;
       document.getElementById('modal-client-phone').innerText = client.phone ? `رقم الهاتف: ${client.phone}` : 'بدون رقم هاتف';
-      document.getElementById('modal-client-balance').innerText = `الرصيد الحالي: ${Math.abs(client.balance).toFixed(2)} ر.ي (${client.balance > 0 ? 'عليه' : 'له'})`;
+      document.getElementById('modal-client-balance').innerText = `الرصيد الحالي: ${formatCurrency(Math.abs(client.balance))} ر.ي (${client.balance > 0 ? 'عليه' : 'له'})`;
 
       const tbody = document.getElementById('modal-vouchers-body');
       tbody.innerHTML = '';
 
-      const clientVouchers = db.vouchers.filter(v => v.clientId === clientId);
+      // فرز السندات من الأقدم إلى الأحدث لتسلسل الرصيد
+      const clientVouchers = db.vouchers.filter(v => v.clientId === clientId).reverse();
+      
       if (clientVouchers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4">لا توجد حركات مسجلة لهذا الحساب</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5">لا توجد حركات مسجلة لهذا الحساب</td></tr>';
       } else {
+        let runningBalance = 0;
         clientVouchers.forEach(v => {
+          if (v.type === 'payment') {
+            runningBalance += v.amount;
+          } else {
+            runningBalance -= v.amount;
+          }
+
+          const balLabel = runningBalance > 0 ? 'عليه' : runningBalance < 0 ? 'له' : 'متعادل';
+
           tbody.innerHTML += `
             <tr>
               <td>${v.date}</td>
               <td style="color:${v.type==='receipt'?'#52b788':'#ff8fa3'}">${v.type==='receipt'?'قبض':'صرف'}</td>
               <td>${v.note || '-'}</td>
-              <td>${v.amount} ر.ي</td>
+              <td>${formatCurrency(v.amount)} ر.ي</td>
+              <td style="font-weight:bold;">${formatCurrency(Math.abs(runningBalance))} ر.ي (${balLabel})</td>
             </tr>`;
         });
       }
@@ -794,9 +826,9 @@
         if (c.balance > 0) debit += c.balance;
         else credit += Math.abs(c.balance);
       });
-      document.getElementById('total-debit').innerText = debit.toFixed(2) + ' ر.ي';
-      document.getElementById('total-credit').innerText = credit.toFixed(2) + ' ر.ي';
-      document.getElementById('net-total').innerText = (debit - credit).toFixed(2) + ' ر.ي';
+      document.getElementById('total-debit').innerText = formatCurrency(debit) + ' ر.ي';
+      document.getElementById('total-credit').innerText = formatCurrency(credit) + ' ر.ي';
+      document.getElementById('net-total').innerText = formatCurrency(debit - credit) + ' ر.ي';
 
       filterVoucherClients();
 
@@ -843,7 +875,7 @@
                 <small style="display:block; color:var(--text-muted);">${c.phone || 'بدون رقم'}</small>
                 ${c.dueDate ? `<small style="display:block; color:#ff8fa3;">📅 موعد السداد: ${c.dueDate}</small>` : ''}
               </div>
-              <span class="badge ${c.balance > 0 ? 'bg-blue' : 'bg-green'}">${Math.abs(c.balance).toFixed(2)} ر.ي (${label})</span>
+              <span class="badge ${c.balance > 0 ? 'bg-blue' : 'bg-green'}">${formatCurrency(Math.abs(c.balance))} ر.ي (${label})</span>
             </div>
             <div style="margin-top:10px; display:flex; gap:5px; justify-content:flex-end; flex-wrap:wrap;">
               <button class="btn btn-sm" style="background:#00b4d8;" onclick="createVoucherForClient('${c.id}')">➕ سند</button>
@@ -882,7 +914,7 @@
                 <small style="display:block; color:var(--text-muted);">${c.phone || 'بدون رقم'}</small>
                 <small style="display:block; color:#e53e3e; font-weight:bold;">تاريخ الاستحقاق المتأخر: ${c.dueDate}</small>
               </div>
-              <span class="badge bg-red">${c.balance.toFixed(2)} ر.ي</span>
+              <span class="badge bg-red">${formatCurrency(c.balance)} ر.ي</span>
             </div>
             <div style="margin-top:10px; display:flex; gap:5px; justify-content:flex-end;">
               <button class="btn btn-sm btn-wa" onclick="sendReminderWA('${c.id}')">📱 طلب السداد فوراً</button>
@@ -891,13 +923,23 @@
       });
     }
 
+    // محرك البحث الفعال في السندات
     function renderVouchers() {
       const container = document.getElementById('vouchers-list');
       const recentContainer = document.getElementById('recent-vouchers-list');
+      const searchInput = document.getElementById('vouchers-search');
+      const search = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
       container.innerHTML = '';
       recentContainer.innerHTML = '';
 
-      db.vouchers.forEach((v, index) => {
+      const filtered = db.vouchers.filter(v => 
+        v.clientName.toLowerCase().includes(search) || 
+        (v.note && v.note.toLowerCase().includes(search)) ||
+        v.amount.toString().includes(search)
+      );
+
+      filtered.forEach((v, index) => {
         const sentBadge = v.sent ? '<span style="color:#52b788; font-size:10px;">✓ تم الإرسال</span>' : '<span style="color:#ff8fa3; font-size:10px;">✕ لم يرسل</span>';
 
         const html = `
@@ -908,7 +950,7 @@
                 <small style="display:block; color:var(--text-muted);">${v.date} ${v.dueDate ? '| سداد: '+v.dueDate : ''} | ${sentBadge}</small>
               </div>
               <div>
-                <span class="badge ${v.type==='receipt'?'bg-green':'bg-red'}">${v.type==='receipt'?'+':'-'} ${v.amount} ر.ي</span>
+                <span class="badge ${v.type==='receipt'?'bg-green':'bg-red'}">${v.type==='receipt'?'+':'-'} ${formatCurrency(v.amount)} ر.ي</span>
               </div>
             </div>
             <div style="margin-top:8px; display:flex; gap:5px; justify-content:flex-end;">
@@ -927,7 +969,7 @@
       let html = '<table><thead><tr><th>العميل</th><th>الرقم</th><th>موعد السداد</th><th>الرصيد النهائي</th></tr></thead><tbody>';
       db.clients.forEach(c => {
         const label = c.balance > 0 ? 'عليه' : c.balance < 0 ? 'له' : 'خالي';
-        html += `<tr><td>${c.name}</td><td>${c.phone || '-'}</td><td>${c.dueDate || '-'}</td><td>${Math.abs(c.balance).toFixed(2)} ر.ي (${label})</td></tr>`;
+        html += `<tr><td>${c.name}</td><td>${c.phone || '-'}</td><td>${c.dueDate || '-'}</td><td>${formatCurrency(Math.abs(c.balance))} ر.ي (${label})</td></tr>`;
       });
       html += '</tbody></table>';
       container.innerHTML = html;
@@ -939,6 +981,28 @@
       dlAnchorElem.setAttribute("href", dataStr);
       dlAnchorElem.setAttribute("download", "SohaibPro_Backup.json");
       dlAnchorElem.click();
+    }
+
+    // دالة مشاركة النسخة الاحتياطية عبر واجهة المشاركة المباشرة (Web Share API)
+    async function shareData() {
+      const jsonStr = JSON.stringify(db, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const file = new File([blob], 'SohaibPro_Backup.json', { type: 'application/json' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: 'نسخة احتياطية - Sohaib Pro',
+            text: 'إليك النسخة الاحتياطية الخاصة بتطبيق Sohaib Pro',
+            files: [file]
+          });
+        } catch (err) {
+          if (err.name !== 'AbortError') alert('حدث خطأ أثناء المشاركة!');
+        }
+      } else {
+        alert('واجهة المشاركة المباشرة غير مدعومة في هذا المتصفح. تم تنزيل الملف بدلاً من ذلك.');
+        exportData();
+      }
     }
 
     function importData(event) {
