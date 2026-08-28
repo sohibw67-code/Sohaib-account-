@@ -117,7 +117,7 @@
       <img id="header-logo" src="" alt="لوجو">
       <div>
         <h1 id="header-store-name">Sohaib Pro</h1>
-        <span id="header-subtitle" style="font-size: 11px; color: var(--text-muted);">محلات الدشيمي</span>
+        <span id="header-subtitle" style="font-size: 11px; color: var(--text-muted);">محلات الدشيمي للتجارة العامة</span>
       </div>
     </div>
     <div style="display: flex; gap: 8px; align-items: center;">
@@ -242,7 +242,7 @@
   <div id="tab-reports" class="hidden">
     <div class="print-header hidden">
       <div>
-        <h2 id="print-store-name" style="margin:0;">محلات الدشيمي</h2>
+        <h2 id="print-store-name" style="margin:0;">محلات الدشيمي للتجارة العامة</h2>
         <span id="print-subtitle" style="font-size:12px;">كشف حساب مالي منظّم</span>
       </div>
       <img id="print-logo" src="" alt="Logo">
@@ -360,9 +360,9 @@
       ],
       vouchers: JSON.parse(localStorage.getItem('pro_vouchers')) || [],
       templates: JSON.parse(localStorage.getItem('pro_templates')) || {
-        receipt: "تم استلام مبلغ {amount} ر.ي من الأخ {name}.\nالبيان: {note}\nرصيدكم المتبقي: {balance} ر.ي بتاريخ {date}.\nمحلات الدشيمي.",
-        payment: "تم تقييد مبلغ {amount} ر.ي لحساب الأخ {name}.\nالبيان: {note}\nتاريخ الاستحقاق: {dueDate}\nرصيدكم الحالي: {balance} ر.ي بتاريخ {date}.\nمحلات الدشيمي.",
-        reminder: "الأخ {name}، نود تذكيركم بضرورة سداد المبلغ المستحق عليكم برصيد: {balance} ر.ي.\nتاريخ الاستحقاق كان: {dueDate}\nمحلات الدشيمي."
+        receipt: "تم استلام مبلغ {amount} ر.ي من الأخ {name}.\nالبيان: {note}\nرصيدكم المتبقي: {balance} ر.ي بتاريخ {date}.\nمحلات الدشيمي للتجارة العامة.",
+        payment: "تم تقييد مبلغ {amount} ر.ي لحساب الأخ {name}.\nالبيان: {note}\nتاريخ الاستحقاق: {dueDate}\nرصيدكم الحالي: {balance} ر.ي بتاريخ {date}.\nمحلات الدشيمي للتجارة العامة.",
+        reminder: "الأخ {name}، نود تذكيركم بضرورة سداد المبلغ المستحق عليكم برصيد: {balance} ر.ي.\nتاريخ الاستحقاق كان: {dueDate}\nمحلات الدشيمي للتجارة العامة."
       },
       store: JSON.parse(localStorage.getItem('pro_store')) || {
         name: "محلات الدشيمي للتجارة العامة",
@@ -444,7 +444,7 @@
     }
 
     function saveStoreSettings() {
-      db.store.name = document.getElementById('setting-store-name').value || "محلات الدشيمي";
+      db.store.name = document.getElementById('setting-store-name').value || "محلات الدشيمي للتجارة العامة";
       db.store.subtitle = document.getElementById('setting-subtitle').value || "";
       db.store.pin = document.getElementById('setting-pin').value || "1234";
       saveData();
