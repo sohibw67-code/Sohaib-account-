@@ -6,15 +6,13 @@
   <title>Sohaib Pro</title>
 
   <!-- إعدادات تحويل الصفحة إلى تطبيق للهواتف (PWA) -->
+  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0b132b">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Sohaib Pro">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2362/2362372.png">
-
-  <!-- Manifest لتنسيق الأيقونة والشاشة المستقلة -->
-  <link rel="manifest" href='data:application/manifest+json,{"name":"Sohaib Pro","short_name":"SohaibPro","start_url":".","display":"standalone","background_color":"#0b132b","theme_color":"#0b132b","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2362/2362372.png","sizes":"512x512","type":"image/png"}]}'>
 
   <style>
     :root {
@@ -448,7 +446,7 @@
       db.store.subtitle = document.getElementById('setting-subtitle').value || "";
       db.store.pin = document.getElementById('setting-pin').value || "1234";
       saveData();
-      alert('تم حفظ بيانات الهوية الأمان بنجاح!');
+      alert('تم حفظ بيانات الهوية والأمان بنجاح!');
     }
 
     function loadStoreSettings() {
@@ -488,7 +486,6 @@
 
       if (!name) return alert('يرجى كتابة اسم العميل');
 
-      // التحقق من تكرار الاسم
       const exists = db.clients.find(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== id);
       if (exists) return alert('يوجد عميل مسجل بهذا الاسم مسبقاً!');
 
@@ -773,7 +770,6 @@
       `;
     }
 
-    // كشف الحساب بالتراكم الترتيبي الصحيح
     function openClientStatement(clientId) {
       const client = db.clients.find(c => c.id === clientId);
       if (!client) return;
@@ -785,7 +781,6 @@
       const tbody = document.getElementById('modal-vouchers-body');
       tbody.innerHTML = '';
 
-      // فرز السندات من الأقدم إلى الأحدث لتسلسل الرصيد
       const clientVouchers = db.vouchers.filter(v => v.clientId === clientId).reverse();
       
       if (clientVouchers.length === 0) {
@@ -923,7 +918,6 @@
       });
     }
 
-    // محرك البحث الفعال في السندات
     function renderVouchers() {
       const container = document.getElementById('vouchers-list');
       const recentContainer = document.getElementById('recent-vouchers-list');
@@ -983,7 +977,6 @@
       dlAnchorElem.click();
     }
 
-    // دالة مشاركة النسخة الاحتياطية عبر واجهة المشاركة المباشرة (Web Share API)
     async function shareData() {
       const jsonStr = JSON.stringify(db, null, 2);
       const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -1028,6 +1021,21 @@
     }
 
     refreshUI();
+  </script>
+
+  <!-- كود تسجيل Service Worker لتفعيل PWA بالكامل -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js")
+          .then(function (registration) {
+            console.log("Sohaib Pro PWA جاهز، نطاق العمل:", registration.scope);
+          })
+          .catch(function (error) {
+            console.error("فشل تسجيل التطبيق:", error);
+          });
+      });
+    }
   </script>
 </body>
 </html>
