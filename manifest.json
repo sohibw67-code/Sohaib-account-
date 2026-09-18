@@ -1,6 +1,7 @@
 {
-  "name": "تطبيق الأذكار والقبلة الشامل",
+  "name": "تطبيق الأذكار الشامل",
   "short_name": "الأذكار",
+  "description": "تطبيق شامل للأذكار والأدعية ومواقيت الصلاة واتجاه القبلة",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f392b",
@@ -16,7 +17,8 @@
     {
       "src": "https://cdn-icons-png.flaticon.com/512/2913/2913008.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
