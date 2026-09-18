@@ -3,37 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تطبيق الأذكار والقبلة</title>
+  <title>تطبيق الأذكار والقبلة الشامل</title>
   
-  <!-- PWA Meta Tags للتنزيل والتثبيت على الهاتف -->
+  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0f392b">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="الأذكار">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2913/2913008.png">
 
-  <!-- Manifest JSON المدمج للـ PWA -->
-  <link rel="manifest" href='data:application/manifest+json,{"name":"تطبيق الأذكار والقبلة","short_name":"الأذكار","start_url":".","display":"standalone","background_color":"#0f392b","theme_color":"#0f392b","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2913/2913008.png","sizes":"512x512","type":"image/png"}]}'>
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 
     :root {
-      --bg-color: #f3f6f4;
+      --bg-color: #f0f4f1;
       --card-bg: #ffffff;
       --primary: #0f392b;
       --primary-light: #18523f;
       --accent: #d4af37;
-      --accent-hover: #b89528;
       --text-main: #2d3748;
       --text-muted: #718096;
-      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 40px; }
+    body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 50px; }
 
-    /* Header */
     header {
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
       color: white;
@@ -42,27 +37,25 @@
       border-bottom-left-radius: 30px;
       border-bottom-right-radius: 30px;
       box-shadow: 0 10px 20px rgba(15, 57, 43, 0.2);
-      position: relative;
     }
     header h1 { font-size: 1.8rem; font-weight: 800; color: var(--accent); margin-bottom: 5px; }
-    header p { font-size: 0.95rem; opacity: 0.9; }
 
-    .install-btn {
+    .install-pwa-btn {
       display: none;
       margin: 15px auto 0;
       background: var(--accent);
       color: var(--primary);
       border: none;
-      padding: 8px 20px;
+      padding: 10px 24px;
       border-radius: 20px;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
     }
 
-    .container { max-width: 700px; margin: -20px auto 0; padding: 0 15px; position: relative; z-index: 10; }
+    .container { max-width: 750px; margin: -20px auto 0; padding: 0 15px; position: relative; z-index: 10; }
 
-    /* Card Standard */
     .card {
       background: var(--card-bg);
       padding: 22px;
@@ -95,14 +88,8 @@
       padding: 12px 8px;
       border-radius: 14px;
       text-align: center;
-      transition: all 0.3s ease;
     }
-    .prayer-item.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-      transform: translateY(-2px);
-    }
+    .prayer-item.active { background: var(--primary); color: white; border-color: var(--primary); }
     .prayer-item.active .prayer-name { color: var(--accent); }
     .prayer-name { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
     .prayer-time { font-size: 1.05rem; font-weight: bold; }
@@ -132,17 +119,12 @@
       border-radius: 50%;
       border: 2px dashed var(--primary-light);
       position: absolute;
-      transition: transform 0.1s cubic-bezier(0.1, 0.1, 0.25, 1);
+      transition: transform 0.1s linear;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-    .compass-mark {
-      position: absolute;
-      font-weight: bold;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
+    .compass-mark { position: absolute; font-weight: bold; font-size: 0.8rem; color: var(--text-muted); }
     .mark-n { top: 5px; color: #e53e3e; }
     .mark-s { bottom: 5px; }
     .mark-e { right: 8px; }
@@ -170,7 +152,7 @@
       display: flex;
       gap: 8px;
       overflow-x: auto;
-      padding-bottom: 8px;
+      padding-bottom: 10px;
       margin-bottom: 15px;
     }
     .tab-btn {
@@ -183,12 +165,8 @@
       font-weight: bold;
       cursor: pointer;
       white-space: nowrap;
-      transition: 0.2s;
     }
-    .tab-btn.active {
-      background: var(--primary);
-      color: white;
-    }
+    .tab-btn.active { background: var(--primary); color: white; }
 
     .azkar-card {
       background: #fdfdfd;
@@ -196,25 +174,10 @@
       border-radius: 14px;
       padding: 16px;
       margin-bottom: 12px;
-      position: relative;
     }
-    .azkar-text {
-      font-size: 1.05rem;
-      line-height: 1.8;
-      color: #1a202c;
-      margin-bottom: 12px;
-      text-align: justify;
-    }
-    .azkar-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .azkar-bless {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      max-width: 70%;
-    }
+    .azkar-text { font-size: 1.05rem; line-height: 1.8; color: #1a202c; margin-bottom: 12px; text-align: justify; }
+    .azkar-footer { display: flex; justify-content: space-between; align-items: center; }
+    .azkar-bless { font-size: 0.8rem; color: var(--text-muted); max-width: 70%; }
     .counter-btn {
       background: var(--accent);
       color: var(--primary);
@@ -224,22 +187,18 @@
       font-weight: 800;
       cursor: pointer;
       min-width: 80px;
-      text-align: center;
-      transition: transform 0.1s, background-color 0.2s;
     }
-    .counter-btn:active { transform: scale(0.95); }
     .counter-btn.done { background: #38a169; color: white; }
 
     .action-btn {
       background: var(--primary);
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 12px 20px;
       border-radius: 12px;
       font-weight: bold;
       cursor: pointer;
       width: 100%;
-      margin-top: 5px;
     }
   </style>
 </head>
@@ -247,16 +206,16 @@
 
   <header>
     <h1>تطبيق الأذكار والقبلة</h1>
-    <p>مواقيت الصلاة، اتجاه القبلة، والأذكار اليومية</p>
-    <button id="installApp" class="install-btn">📲 تثبيت التطبيق على الهاتف</button>
+    <p>مواقيت الصلاة، الاتجاه الدقيق، ومجموعة الأذكار الكاملة</p>
+    <button id="pwaInstallBtn" class="install-pwa-btn">📲 تثبيت التطبيق على الجهاز</button>
   </header>
 
   <div class="container">
 
     <!-- أوقات الصلاة -->
     <div class="card">
-      <div class="card-title">مواقيت الصلاة</div>
-      <p id="location-text" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">جاري جلب موقعك وقائمة الأوقات...</p>
+      <div class="card-title">مواقيت الصلاة اليومية</div>
+      <p id="locationStatus" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">جاري تحديث الموقع والمواقيت...</p>
       <div class="prayer-grid">
         <div class="prayer-item" id="p-Fajr"><div class="prayer-name">الفجر</div><div class="prayer-time">--:--</div></div>
         <div class="prayer-item" id="p-Sunrise"><div class="prayer-name">الشروق</div><div class="prayer-time">--:--</div></div>
@@ -280,87 +239,110 @@
             <div class="qibla-pointer" id="qiblaPointer"></div>
           </div>
         </div>
-        <p id="qiblaAngleText" style="font-size:0.9rem; font-weight:bold; margin-bottom: 10px;">وجه الهاتف أفقياً لتحديد الاتجاه</p>
-        <button class="action-btn" onclick="startCompass()">تفعيل ومعايرة البوصلة</button>
+        <p id="qiblaText" style="font-size:0.9rem; font-weight:bold; margin-bottom: 12px;">ضع الهاتف في وضع أفقياً</p>
+        <button class="action-btn" onclick="requestCompassPermission()">تفعيل حسّاس البوصلة</button>
       </div>
     </div>
 
     <!-- الأذكار -->
     <div class="card">
-      <div class="card-title">الأذكار والأدعية</div>
+      <div class="card-title">الأذكار والأدعية الشاملة</div>
       <div class="tabs-container">
-        <button class="tab-btn active" onclick="switchCategory('sabah', this)">أذكار الصباح</button>
-        <button class="tab-btn" onclick="switchCategory('misa', this)">أذكار المساء</button>
-        <button class="tab-btn" onclick="switchCategory('nom', this)">أذكار النوم</button>
-        <button class="tab-btn" onclick="switchCategory('postPrayer', this)">بعد الصلاة</button>
+        <button class="tab-btn active" onclick="loadCategory('sabah', this)">أذكار الصباح</button>
+        <button class="tab-btn" onclick="loadCategory('misa', this)">أذكار المساء</button>
+        <button class="tab-btn" onclick="loadCategory('nom', this)">أذكار النوم</button>
+        <button class="tab-btn" onclick="loadCategory('istiqath', this)">الاستيقاظ</button>
+        <button class="tab-btn" onclick="loadCategory('postPrayer', this)">بعد الصلاة</button>
+        <button class="tab-btn" onclick="loadCategory('ad3yah', this)">أدعية قرأنية</button>
       </div>
-      <div id="azkarContainer"></div>
-    </div>
-
-    <!-- التذكير بالإشعارات -->
-    <div class="card" style="text-align: center;">
-      <div class="card-title" style="justify-content: center; border-right: none;">التذكيرات والتنبيهات</div>
-      <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 12px;">قم بتفعيل الإشعارات ليصلك تذكير يومي بالأذكار والأدعية</p>
-      <button class="action-btn" onclick="enableNotifications()">تفعيل الإشعارات اليومية</button>
+      <div id="azkarList"></div>
     </div>
 
   </div>
 
   <script>
-    // --- 1. قاعدة بيانات الأذكار الكاملة ---
+    // --- 1. تسجيل الـ Service Worker لتمكين PWA والتثبيت ---
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker Registered'))
+          .catch(err => console.log('SW Registration Failed', err));
+      });
+    }
+
+    let deferredPrompt;
+    const pwaBtn = document.getElementById('pwaInstallBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      pwaBtn.style.display = 'block';
+    });
+
+    pwaBtn.addEventListener('click', () => {
+      pwaBtn.style.display = 'none';
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          deferredPrompt = null;
+        });
+      }
+    });
+
+    // --- 2. الأذكار والأدعية الشاملة ---
     const azkarDatabase = {
       sabah: [
         { text: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ.", count: 1, note: "مكافأة اليوم والحفظ من الشر" },
         { text: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ... (آية الكرسي)", count: 1, note: "من قالها حين يصبح أُجير من الجن حتى يمسي" },
         { text: "قُلْ هُوَ اللَّهُ أَحَدٌ ... وقُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ... وقُلْ أَعُوذُ بِرَبِّ النَّاسِ", count: 3, note: "تكفيك من كل شيء" },
         { text: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ.", count: 1, note: "" },
+        { text: "اللَّهُمَّ أَنْتَ رَبِّي لاَ إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنُوبَ إِلاَّ أَنْتَ.", count: 1, note: "سيد الاستغفار: من قالها موقناً بها ومات دخل الجنة" },
         { text: "حَسْبِيَ اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ.", count: 7, note: "كفاه الله ما أهمه من أمر الدنيا والآخرة" },
+        { text: "بِسْمِ اللَّهِ الَّذِي لاَ يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الأَرْضِ وَلاَ فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ.", count: 3, note: "لم يضره من الله شيء" },
         { text: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ: عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ.", count: 3, note: "تعدل أجوراً مضاعفة" }
       ],
       misa: [
         { text: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ.", count: 1, note: "" },
         { text: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ... (آية الكرسي)", count: 1, note: "حفظ من الجن حتى يصبح" },
+        { text: "قُلْ هُوَ اللَّهُ أَحَدٌ ... وقُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ... وقُلْ أَعُوذُ بِرَبِّ النَّاسِ", count: 3, note: "تكفيك من كل شيء" },
         { text: "اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ.", count: 1, note: "" },
         { text: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ.", count: 3, note: "لم يضره شيء في تلك الليلة" },
-        { text: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.", count: 100, note: "حُطَّت خطايا وإن كانت مثل زبد البحر" }
+        { text: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ.", count: 100, note: "حُطَّت خطاياه وإن كانت مثل زبد البحر" }
       ],
       nom: [
         { text: "بِاسْمِكَ رَبِّي وَضَعْتُ جَنْبِي، وَبِكَ أَرْفَعُهُ، فَإِنْ أَمْسَكْتَ نَفْسِي فَارْحَمْهَا، وَإِنْ أَرْسَلْتَهَا فَاحْفَظْهَا بِمَا تَحْفَظُ بِهِ عِبَادَكَ الصَّالِحِينَ.", count: 1, note: "الحفظ أثناء النوم" },
+        { text: "اللَّهُمَّ خَلَقْتَ نَفْسِي وَأَنْتَ تَوَفَّاهَا، لَكَ مَمَاتُهَا وَمَحْيَاهَا، إِنْ أَحْيَيْتَهَا فَاحْفَظْهَا، وَإِنْ أَمَتَّهَا فَاغْفِرْ لَهَا. اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَافِيَةَ.", count: 1, note: "" },
         { text: "اللَّهُمَّ قِنِي عَذَابَكَ يَوْمَ تَبْعَثُ عِبَادَكَ.", count: 3, note: "تقال عند وضع اليد تحت الخد الأيمن" },
-        { text: "سُبْحَانَ اللَّهِ (33) ، وَالْحَمْدُ لِلَّهِ (33) ، وَاللَّهُ أَكْبَرُ (34)", count: 1, note: "خير لك من خادم" }
+        { text: "سُبْحَانَ اللَّهِ (33) ، وَالْحَمْدُ لِلَّهِ (33) ، وَاللَّهُ أَكْبَرُ (34)", count: 1, note: "خير للمرء من خادم" },
+        { text: "قراءة خواتيم سورة البقرة: {آمَنَ الرَّسُولُ بِمَا أُنْزِلَ إِلَيْهِ مِنْ رَبِّهِ وَالْمُؤْمِنُونَ...}", count: 1, note: "من قرأهما في ليلة كفتاه" }
+      ],
+      istiqath: [
+        { text: "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ.", count: 1, note: "عند الاستيقاظ" },
+        { text: "لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، سُبْحَانَ اللَّهِ، وَالْحَمْدُ لِلَّهِ، وَلاَ إِلَهَ إِلاَّ اللَّهُ، وَاللَّهُ أَكْبَرُ، وَلاَ حَوْلَ وَلاَ قُوَّةَ إِلاَّ بِاللَّهِ الْعَلِيِّ الْعَظِيمِ، رَبِّ اغْفِرْ لِي.", count: 1, note: "غُفر له، فإن دعا استُجيب له" }
       ],
       postPrayer: [
         { text: "أَسْتَغْفِرُ اللَّهَ (ثَلاَثاً)، اللَّهُمَّ أَنْتَ السَّلاَمُ وَمِنْكَ السَّلاَمُ، تَبَارَكْتَ يَا ذَا الْجَلاَلِ وَالإِكْرَامِ.", count: 1, note: "بعد السلام مباشرة" },
+        { text: "لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، اللَّهُمَّ لاَ مَانِعَ لِمَا أَعْطَيْتَ، وَلاَ مُعْطِيَ لِمَا مَنَعْتَ، وَلاَ يَنْفَعُ ذَا الْجَدِّ مِنْكَ الْجَدُّ.", count: 1, note: "" },
         { text: "سُبْحَانَ اللَّهِ (33)، وَالْحَمْدُ لِلَّهِ (33)، وَاللَّهُ أَكْبَرُ (33)، لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ...", count: 1, note: "غفرت ثناياه وإن كانت مثل زبد البحر" }
+      ],
+      ad3yah: [
+        { text: "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ.", count: 1, note: "من أجمع الأدعية" },
+        { text: "رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِنْ لِسَانِي يَفْقَهُوا قَوْلِي.", count: 1, note: "" },
+        { text: "رَبَّنَا لاَ تُزِغْ قُلُوبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِنْ لَدُنْكَ رَحْمَةً إِنَّكَ أَنْتَ الْوَهَّابُ.", count: 1, note: "" }
       ]
     };
 
-    let userLat = null;
-    let userLng = null;
-    let qiblaBearing = 0;
-
-    // --- 2. إدارة تثبيت التطبيق PWA ---
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      const installBtn = document.getElementById('installApp');
-      installBtn.style.display = 'block';
-      installBtn.addEventListener('click', () => {
-        installBtn.style.display = 'none';
-        deferredPrompt.prompt();
-      });
-    });
+    let userLat = null, userLng = null, qiblaBearing = 0;
 
     // --- 3. جلب مواقيت الصلاة والموقع ---
-    function fetchPrayerData() {
+    function initPrayerTimes() {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
           userLat = pos.coords.latitude;
           userLng = pos.coords.longitude;
-          document.getElementById('location-text').innerText = "تم تحديد موقعك بدقة.";
+          document.getElementById('locationStatus').innerText = "تم إيجاد الموقع وتحديث المواقيت.";
           
-          calculateQibla(userLat, userLng);
+          calcQibla(userLat, userLng);
 
           fetch(`https://api.aladhan.com/v1/timings?latitude=${userLat}&longitude=${userLng}&method=4`)
             .then(res => res.json())
@@ -368,28 +350,20 @@
               const timings = data.data.timings;
               ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].forEach(p => {
                 const el = document.getElementById(`p-${p}`);
-                if (el && timings[p]) {
-                  el.querySelector('.prayer-time').innerText = timings[p];
-                }
+                if (el && timings[p]) el.querySelector('.prayer-time').innerText = timings[p];
               });
-            }).catch(() => {
-              document.getElementById('location-text').innerText = "تعذر الاتصال بالشبكة لتعيين الأوقات.";
             });
         }, () => {
-          document.getElementById('location-text').innerText = "يرجى السماح بالموقع لجلب المواقيت والقبلة بدقة.";
+          document.getElementById('locationStatus').innerText = "يرجى منح الإذن للموقع لتعيين القبلة والمواقيت.";
         });
       }
     }
 
-    // --- 4. حساب اتجاه القبلة والبوصلة ---
-    function calculateQibla(lat, lng) {
-      const makkahLat = 21.4225;
-      const makkahLng = 39.8262;
-      
-      const phiK = makkahLat * Math.PI / 180;
-      const lambdaK = makkahLng * Math.PI / 180;
-      const phi = lat * Math.PI / 180;
-      const lambda = lng * Math.PI / 180;
+    // --- 4. البوصلة الحقيقية ---
+    function calcQibla(lat, lng) {
+      const mLat = 21.4225, mLng = 39.8262;
+      const phiK = mLat * Math.PI / 180, lambdaK = mLng * Math.PI / 180;
+      const phi = lat * Math.PI / 180, lambda = lng * Math.PI / 180;
 
       const qibla = Math.atan2(
         Math.sin(lambdaK - lambda),
@@ -400,14 +374,11 @@
       document.getElementById('qiblaPointer').style.transform = `rotate(${qiblaBearing}deg)`;
     }
 
-    function startCompass() {
+    function requestCompassPermission() {
       if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission().then(response => {
-          if (response == 'granted') {
-            window.addEventListener('deviceorientation', handleOrientation);
-          } else {
-            alert('يلزم الإذن للاستفادة من البوصلة');
-          }
+        DeviceOrientationEvent.requestPermission().then(res => {
+          if (res === 'granted') window.addEventListener('deviceorientation', handleOrientation);
+          else alert('يلزم الإذن للوصول لبوصلة الجهاز');
         });
       } else {
         window.addEventListener('deviceorientation', handleOrientation);
@@ -415,66 +386,50 @@
     }
 
     function handleOrientation(e) {
-      let compassHeading = e.webkitCompassHeading || (360 - e.alpha);
-      if (compassHeading) {
-        document.getElementById('compassDisc').style.transform = `rotate(${-compassHeading}deg)`;
-        document.getElementById('qiblaAngleText').innerText = `اتجاه القبلة: ${Math.round(qiblaBearing)}° | اتجاه الهاتف: ${Math.round(compassHeading)}°`;
+      let heading = e.webkitCompassHeading || (360 - e.alpha);
+      if (heading) {
+        document.getElementById('compassDisc').style.transform = `rotate(${-heading}deg)`;
+        document.getElementById('qiblaText').innerText = `درجة القبلة: ${Math.round(qiblaBearing)}° | الاتجاه الحالي: ${Math.round(heading)}°`;
       }
     }
 
-    // --- 5. عرض وتنقل الأذكار ---
-    function switchCategory(cat, btn) {
+    // --- 5. التنقل والعدادات ---
+    function loadCategory(cat, btn) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      renderAzkar(cat);
-    }
 
-    function renderAzkar(category) {
-      const container = document.getElementById('azkarContainer');
+      const container = document.getElementById('azkarList');
       container.innerHTML = '';
 
-      azkarDatabase[category].forEach((item, index) => {
-        const card = document.createElement('div');
-        card.className = 'azkar-card';
-        card.innerHTML = `
+      azkarDatabase[cat].forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'azkar-card';
+        div.innerHTML = `
           <div class="azkar-text">${item.text}</div>
           <div class="azkar-footer">
             <div class="azkar-bless">${item.note || ''}</div>
-            <button class="counter-btn" data-count="${item.count}" onclick="stepCounter(this)">${item.count}</button>
+            <button class="counter-btn" onclick="decrementCounter(this, ${item.count})">${item.count}</button>
           </div>
         `;
-        container.appendChild(card);
+        container.appendChild(div);
       });
     }
 
-    function stepCounter(btn) {
-      let current = parseInt(btn.innerText);
-      if (isNaN(current)) return;
+    function decrementCounter(btn, initialCount) {
+      let val = parseInt(btn.innerText);
+      if (isNaN(val)) return;
 
-      if (current > 1) {
-        btn.innerText = current - 1;
+      if (val > 1) {
+        btn.innerText = val - 1;
       } else {
         btn.innerText = "تم ✔";
         btn.classList.add('done');
       }
     }
 
-    // --- 6. الإشعارات والتنبيهات ---
-    function enableNotifications() {
-      if ('Notification' in window) {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            alert('تم تفعيل التنبيهات بنجاح!');
-            new Notification("تطبيق الأذكار", { body: "مرحباً بك! سيتم تذكيرك بالأذكار يومياً." });
-          }
-        });
-      }
-    }
-
-    // التشغيل المبدئي
     window.onload = () => {
-      fetchPrayerData();
-      renderAzkar('sabah');
+      initPrayerTimes();
+      loadCategory('sabah', document.querySelector('.tab-btn'));
     };
   </script>
 </body>
