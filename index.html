@@ -3,1039 +3,318 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sohaib Pro</title>
-
-  <!-- إعدادات تحويل الصفحة إلى تطبيق للهواتف (PWA) -->
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#0b132b">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Sohaib Pro">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2362/2362372.png">
-
+  <title>تطبيق الأذكار والصلاة</title>
   <style>
     :root {
-      --bg-color: #0b132b;
-      --card-bg: #1c2541;
-      --border-color: #2a385b;
-      --text-color: #ffffff;
-      --text-muted: #a0aec0;
-      --input-bg: #0b132b;
-      --header-border: #1c2541;
-      --th-bg: #0b132b;
+      --primary: #1b4332;
+      --secondary: #2d6a4f;
+      --accent: #d4af37;
+      --bg: #f8f9fa;
+      --text: #212529;
     }
 
-    [data-theme="light"] {
-      --bg-color: #f4f6f9;
-      --card-bg: #ffffff;
-      --border-color: #e2e8f0;
-      --text-color: #1a202c;
-      --text-muted: #718096;
-      --input-bg: #ffffff;
-      --header-border: #cbd5e0;
-      --th-bg: #edf2f7;
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 30px; }
+
+    header {
+      background-color: var(--primary);
+      color: white;
+      text-align: center;
+      padding: 20px;
+      border-bottom: 4px solid var(--accent);
     }
 
-    * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.2s, color 0.2s; }
-    body { margin: 0; background-color: var(--bg-color); color: var(--text-color); padding: 15px; padding-bottom: 80px; user-select: none; }
-    header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--header-border); padding-bottom: 10px; margin-bottom: 15px; }
-    .brand-header { display: flex; align-items: center; gap: 10px; }
-    .brand-header img { max-height: 40px; border-radius: 4px; display: none; }
-    h1 { color: #48cae4; margin: 0; font-size: 20px; }
-    
-    .theme-toggle { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+    .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
 
-    nav { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 5px; }
-    nav button { background-color: var(--card-bg); color: var(--text-muted); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; white-space: nowrap; }
-    nav button.active { background-color: #00b4d8; color: #fff; font-weight: bold; border-color: #00b4d8; }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-    .card { background-color: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); }
-    .card p { margin: 0; color: var(--text-muted); font-size: 12px; }
-    .card h2 { margin: 5px 0 0 0; font-size: 18px; }
-    
-    .item-card { background-color: var(--card-bg); padding: 12px; border-radius: 8px; margin-bottom: 8px; border-right: 4px solid var(--text-muted); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); border-left: 1px solid var(--border-color); }
-    .item-card.credit { border-right-color: #7209b7; }
-    .item-card.debit { border-right-color: #00b4d8; }
-    .item-card.overdue { border-right-color: #e53e3e; }
+    h2 { color: var(--primary); margin-bottom: 15px; border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px; }
 
-    .badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-    .bg-green { background-color: #1b4332; color: #52b788; }
-    .bg-blue { background-color: #03045e; color: #90e0ef; }
-    .bg-red { background-color: #4a0e17; color: #ff8fa3; }
+    /* أوقات الصلاة */
+    .prayer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+      text-align: center;
+    }
+    .prayer-item {
+      background: #e9ecef;
+      padding: 12px;
+      border-radius: 8px;
+    }
+    .prayer-item.active { background: var(--secondary); color: white; }
+    .prayer-name { font-weight: bold; font-size: 0.9em; }
+    .prayer-time { font-size: 1.1em; margin-top: 5px; }
 
-    input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 10px; background-color: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-color); border-radius: 6px; font-size: 13px; }
-    .filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
-    .btn { background-color: #00b4d8; color: #fff; border: none; padding: 10px 15px; border-radius: 6px; width: 100%; font-weight: bold; cursor: pointer; }
-    .btn-danger { background-color: #e53e3e; color: #fff; }
-    .btn-secondary { background-color: #4a5568; color: #fff; }
-    .btn-wa { background-color: #25d366; color: #fff; }
-    .btn-sm { width: auto; padding: 4px 8px; font-size: 12px; display: inline-flex; align-items: center; gap: 3px; }
-
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; padding: 15px; z-index: 99; }
-    .modal-content { background: var(--card-bg); padding: 20px; border-radius: 10px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-color); }
-
-    .hidden { display: none; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-    th, td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
-    th { background: var(--th-bg); color: #48cae4; position: sticky; top: 0; z-index: 10; }
-
-    .client-live-balance {
-      background-color: var(--input-bg);
-      border: 1px dashed #00b4d8;
-      padding: 8px 12px;
+    /* الأذكار */
+    .tab-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: #dee2e6;
+      cursor: pointer;
       border-radius: 6px;
-      margin-bottom: 10px;
-      font-size: 12px;
-      color: #48cae4;
+      font-weight: bold;
+    }
+    .tab-btn.active { background: var(--secondary); color: white; }
+
+    .azkar-item {
+      border-bottom: 1px solid #eee;
+      padding: 15px 0;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .azkar-text { font-size: 1.1em; line-height: 1.6; }
+    .counter-btn {
+      align-self: flex-end;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
     }
 
-    @media print {
-      body { background-color: #fff !important; color: #000 !important; padding: 0; }
-      nav, header button, .btn, input, select, textarea, #tab-home, #tab-clients, #tab-vouchers, #tab-overdue, #tab-templates, #tab-settings { display: none !important; }
-      #tab-reports { display: block !important; }
-      .card { background-color: #fff !important; border: 1px solid #ccc !important; color: #000 !important; }
-      table { border-color: #000 !important; }
-      th, td { border-color: #000 !important; color: #000 !important; }
-      th { background-color: #f0f0f0 !important; }
-      .print-header { display: flex !important; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-      .print-header img { max-height: 60px; }
+    /* البوصلة */
+    .compass-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .compass {
+      width: 200px;
+      height: 200px;
+      border: 8px solid var(--primary);
+      border-radius: 50%;
+      position: relative;
+      margin: 20px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pointer {
+      width: 6px;
+      height: 90px;
+      background: red;
+      position: absolute;
+      top: 10px;
+      transform-origin: bottom center;
+      transition: transform 0.2s ease-out;
+    }
+
+    button.btn-action {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="brand-header">
-      <img id="header-logo" src="" alt="لوجو">
-      <div>
-        <h1 id="header-store-name">Sohaib Pro</h1>
-        <span id="header-subtitle" style="font-size: 11px; color: var(--text-muted);">محلات الدشيمي للتجارة العامة</span>
-      </div>
-    </div>
-    <div style="display: flex; gap: 8px; align-items: center;">
-      <button class="theme-toggle" onclick="toggleTheme()">
-        <span id="theme-icon">🌙</span> <span id="theme-text">الوضع الداكن</span>
-      </button>
-      <button class="btn btn-sm" style="background:#00b4d8;" onclick="showTab('vouchers'); resetVoucherForm();">➕ سند جديد</button>
-    </div>
+    <h1>تطبيق الأذكار وأوقات الصلاة</h1>
   </header>
 
-  <nav>
-    <button id="btn-home" class="active" onclick="showTab('home')">الرئيسية</button>
-    <button id="btn-clients" onclick="showTab('clients')">العملاء</button>
-    <button id="btn-vouchers" onclick="showTab('vouchers')">السندات</button>
-    <button id="btn-overdue" onclick="showTab('overdue')">⚠️ المتأخرين</button>
-    <button id="btn-reports" onclick="showTab('reports')">التقارير PDF</button>
-    <button id="btn-templates" onclick="showTab('templates')">الإعدادات والقوالب</button>
-    <button id="btn-settings" onclick="showTab('settings')">النسخ والاستعادة</button>
-  </nav>
+  <div class="container">
 
-  <br>
-
-  <!-- 1. الرئيسية -->
-  <div id="tab-home">
-    <div class="grid-2">
-      <div class="card">
-        <p>صافي الإجمالي</p>
-        <h2 style="color: #48cae4;" id="net-total">0.00 ر.ي</h2>
-      </div>
-      <div class="card">
-        <p>عليه (لك)</p>
-        <h2 style="color: #00b4d8;" id="total-debit">0.00 ر.ي</h2>
-      </div>
-      <div class="card" style="grid-column: span 2;">
-        <p>له (عليك)</p>
-        <h2 style="color: #7209b7;" id="total-credit">0.00 ر.ي</h2>
-      </div>
-    </div>
-
-    <h3>آخر السندات المسجلة</h3>
-    <div id="recent-vouchers-list"></div>
-  </div>
-
-  <!-- 2. العملاء -->
-  <div id="tab-clients" class="hidden">
-    <div class="filter-row">
-      <input type="text" id="client-search" placeholder="بحث باسم العميل أو الرقم..." onkeyup="renderClients()">
-      <select id="client-filter-sort" onchange="renderClients()">
-        <option value="all">كل العملاء</option>
-        <option value="debit">عليهم (دَين لك)</option>
-        <option value="credit">لهم (دَين عليك)</option>
-        <option value="amount-desc">الأعلى رصيداً</option>
-      </select>
-    </div>
-
-    <div class="card" style="margin-bottom: 15px;">
-      <p id="form-client-title">إضافة عميل جديد</p>
-      <input type="hidden" id="edit-client-id">
-      <input type="text" id="new-client-name" placeholder="اسم العميل">
-      <input type="text" id="new-client-phone" placeholder="رقم الهاتف (مثال: 967770000000)">
-      <button class="btn" id="btn-save-client" onclick="saveClient()">حفظ العميل</button>
-    </div>
-
-    <div id="clients-list"></div>
-  </div>
-
-  <!-- 3. السندات -->
-  <div id="tab-vouchers" class="hidden">
-    <div class="card" style="margin-bottom: 15px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <p id="form-voucher-title" style="margin: 0; font-weight: bold;">إصدار سند جديد</p>
-        <button class="btn btn-sm btn-secondary" onclick="resetVoucherForm()">➕ فتح سند جديد</button>
-      </div>
-      
-      <input type="hidden" id="edit-voucher-id">
-      
-      <label style="font-size: 11px; color: var(--text-muted);">تصفية / بحث عن عميل:</label>
-      <input type="text" id="voucher-client-search" placeholder="اكتب اسم العميل للبحث السريع..." onkeyup="filterVoucherClients()">
-      
-      <select id="voucher-client-id" onchange="updateSelectedClientBalance()"></select>
-      
-      <div id="live-balance-box" class="client-live-balance hidden">
-        <span>الرصيد الحالي للعميل:</span>
-        <strong id="live-balance-val">0.00 ر.ي</strong>
-      </div>
-
-      <select id="voucher-type" onchange="toggleDueDateField()">
-        <option value="receipt">سند قبض (+ سداد دَين)</option>
-        <option value="payment">سند صرف (- دَين جديد)</option>
-      </select>
-      
-      <div id="due-date-container" class="hidden">
-        <label style="font-size: 11px; color: #ff8fa3;">موعد الاستحقاق / السداد:</label>
-        <input type="date" id="voucher-due-date">
-      </div>
-
-      <input type="number" id="voucher-amount" placeholder="المبلغ بالريال اليمني">
-      <input type="text" id="voucher-note" placeholder="البيان / السبب (سيتم تضمينه بالرسالة تلقائياً)">
-      <button class="btn" id="btn-save-voucher" onclick="saveVoucher()">تسجيل السند وإرسال واتساب فوراً</button>
-    </div>
-
-    <h3>سجل السندات</h3>
-    <input type="text" id="vouchers-search" placeholder="بحث في السندات (اسم العميل، البيان، أو المبلغ)..." onkeyup="renderVouchers()">
-    <div id="vouchers-list"></div>
-  </div>
-
-  <!-- 4. المتأخرون عن السداد -->
-  <div id="tab-overdue" class="hidden">
-    <h3>⚠️ قائمة العملاء المتأخرين عن السداد</h3>
-    <div class="filter-row">
-      <input type="text" id="overdue-search" placeholder="بحث باسم العميل..." onkeyup="renderOverdue()">
-      <select id="overdue-filter-sort" onchange="renderOverdue()">
-        <option value="date">حسب تاريخ الاستحقاق</option>
-        <option value="amount">الأعلى مَبْلَغاً</option>
-      </select>
-    </div>
-    <br>
-    <div id="overdue-list"></div>
-  </div>
-
-  <!-- 5. التقارير -->
-  <div id="tab-reports" class="hidden">
-    <div class="print-header hidden">
-      <div>
-        <h2 id="print-store-name" style="margin:0;">محلات الدشيمي للتجارة العامة</h2>
-        <span id="print-subtitle" style="font-size:12px;">كشف حساب مالي منظّم</span>
-      </div>
-      <img id="print-logo" src="" alt="Logo">
-    </div>
-
-    <h3>تقارير الحسابات الرسمية</h3>
-    
-    <div class="card" style="margin-bottom: 15px;">
-      <p>تقرير الحركة اليومية (مقبوضات ومصروفات)</p>
-      <input type="date" id="report-daily-date">
-      <button class="btn" onclick="generateDailyReport()">عرض تقرير الحركة اليومية</button>
-      <div id="daily-report-output" style="margin-top: 10px;"></div>
-    </div>
-
-    <div class="card" style="margin-bottom: 15px;">
-      <p>عرض وتصدير كشف حساب تفصيلي لعميل</p>
-      <select id="report-client-select"></select>
-      <button class="btn" onclick="openClientStatement(document.getElementById('report-client-select').value)">عرض كشف الحساب</button>
-    </div>
-
+    <!-- قسم أوقات الصلاة -->
     <div class="card">
-      <p>كشف الأرصدة الإجمالي كافة العملاء</p>
-      <br>
-      <button class="btn btn-sm" onclick="window.print()">🖨️ طباعة / تصدير PDF</button>
-      <div id="all-clients-report" style="margin-top: 15px;"></div>
-    </div>
-  </div>
-
-  <!-- 6. الإعدادات والقوالب -->
-  <div id="tab-templates" class="hidden">
-    <div class="card" style="margin-bottom: 15px;">
-      <p>شعار واسم المحل (للطباعة والتقارير)</p>
-      <input type="text" id="setting-store-name" placeholder="اسم المحل الرئيسي">
-      <input type="text" id="setting-subtitle" placeholder="النص الفرعي (مثال: للتجارة العامة)">
-      <p style="font-size:11px; color:var(--text-muted);">رمز الأمان لتغيير وحذف الحسابات السريعة:</p>
-      <input type="password" id="setting-pin" placeholder="رمز الأمان">
-      <p style="font-size:11px; color:var(--text-muted);">رفع اللوقو / الشعار:</p>
-      <input type="file" id="setting-logo-input" accept="image/*" onchange="handleLogoUpload(event)">
-      <button class="btn" style="margin-top:5px;" onclick="saveStoreSettings()">حفظ بيانات الهوية والأمان</button>
+      <h2>مواقيت الصلاة اليوم</h2>
+      <p id="location-status" style="font-size:0.9em; color:#666; margin-bottom:10px;">جاري جلب الموقع...</p>
+      <div class="prayer-grid" id="prayer-times">
+        <div class="prayer-item"><div class="prayer-name">الفجر</div><div class="prayer-time" id="Fajr">--:--</div></div>
+        <div class="prayer-item"><div class="prayer-name">الشروق</div><div class="prayer-time" id="Sunrise">--:--</div></div>
+        <div class="prayer-item"><div class="prayer-name">الظهر</div><div class="prayer-time" id="Dhuhr">--:--</div></div>
+        <div class="prayer-item"><div class="prayer-name">العصر</div><div class="prayer-time" id="Asr">--:--</div></div>
+        <div class="prayer-item"><div class="prayer-name">المغرب</div><div class="prayer-time" id="Maghrib">--:--</div></div>
+        <div class="prayer-item"><div class="prayer-name">العشاء</div><div class="prayer-time" id="Isha">--:--</div></div>
+      </div>
     </div>
 
-    <h3>محرر قوالب الرسائل</h3>
-    <p style="font-size:12px; color:var(--text-muted);">المتغيرات المدعومة: {name}، {amount}، {balance}، {date}، {note}، {dueDate}</p>
-
-    <div class="card" style="margin-bottom: 10px;">
-      <p>قالب سند القبض (سداد):</p>
-      <textarea id="tpl-receipt" rows="3"></textarea>
+    <!-- قسم البوصلة والقبلة -->
+    <div class="card compass-container">
+      <h2>اتجاه القبلة</h2>
+      <p style="font-size:0.85em; color:#666;">(يتطلب تفعيل الموقع ومستشعر الاتجاه على الهاتف)</p>
+      <div class="compass">
+        <div class="pointer" id="compass-pointer"></div>
+      </div>
+      <button class="btn-action" onclick="initCompass()">تفعيل البوصلة</button>
+      <p id="qibla-degree" style="margin-top:10px; font-weight:bold;"></p>
     </div>
 
-    <div class="card" style="margin-bottom: 10px;">
-      <p>قالب سند الصرف (دين جديد):</p>
-      <textarea id="tpl-payment" rows="3"></textarea>
-    </div>
-
-    <div class="card" style="margin-bottom: 10px;">
-      <p>قالب التذكير العام بالدين والمتأخرات:</p>
-      <textarea id="tpl-reminder" rows="3"></textarea>
-    </div>
-
-    <button class="btn" onclick="saveTemplates()">حفظ القوالب</button>
-  </div>
-
-  <!-- 7. النسخ والاستعادة -->
-  <div id="tab-settings" class="hidden">
+    <!-- قسم الأذكار -->
     <div class="card">
-      <p>النسخ الاحتياطي والاستعادة والمشاركة (JSON)</p>
-      <br>
-      <button class="btn" onclick="exportData()">💾 تنزيل نسخة احتياطية</button>
-      <br><br>
-      <button class="btn" style="background:#00b4d8;" onclick="shareData()">📲 مشاركة النسخة عبر الواتساب/تطبيقات أخرى</button>
-      <br><br>
-      <label class="btn" style="background:#7209b7; text-align:center; display:block;">
-        📂 استعادة نسخة احتياطية
-        <input type="file" id="import-file" style="display:none;" onchange="importData(event)">
-      </label>
-    </div>
-  </div>
-
-  <!-- نافذة كشف الحساب -->
-  <div id="statement-modal" class="modal hidden">
-    <div class="modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
-        <h3 id="modal-client-name" style="margin: 0; color: #48cae4;"></h3>
-        <button class="btn btn-sm btn-danger" onclick="closeModal()">✕ إغلاق</button>
+      <h2>الأذكار اليومية</h2>
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="showAzkar('sabah')">أذكار الصباح</button>
+        <button class="tab-btn" onclick="showAzkar('misa')">أذكار المساء</button>
       </div>
-      <p id="modal-client-phone" style="color: var(--text-muted); font-size: 12px;"></p>
-      <h4 id="modal-client-balance"></h4>
-
-      <table>
-        <thead>
-          <tr>
-            <th>التاريخ</th>
-            <th>النوع</th>
-            <th>البيان</th>
-            <th>المبلغ</th>
-            <th>الرصيد التراكمي</th>
-          </tr>
-        </thead>
-        <tbody id="modal-vouchers-body"></tbody>
-      </table>
-
-      <br>
-      <div style="display:flex; gap:5px;">
-        <button class="btn btn-wa" id="modal-wa-btn">📱 إرسال تذكير بالحساب</button>
-        <button class="btn" onclick="window.print()">🖨️ طباعة الكشف</button>
-      </div>
+      <div id="azkar-list"></div>
     </div>
+
+    <!-- التذكير للإشعارات -->
+    <div class="card" style="text-align: center;">
+      <h2>تفعيل التذكير اليومي</h2>
+      <p style="margin-bottom:10px;">احصل على تذكيرات يومية لقراءة الأذكار والدعاء.</p>
+      <button class="btn-action" onclick="requestNotification()">تفعيل الإشعارات</button>
+    </div>
+
   </div>
 
   <script>
-    let db = {
-      clients: JSON.parse(localStorage.getItem('pro_clients')) || [
-        { id: '1', name: 'زيادة وعجز الصندوق', phone: '', balance: -5.65, dueDate: '' },
-        { id: '2', name: 'عمر العميسي', phone: '967770000000', balance: 12.40, dueDate: '' }
+    // --- بيانات الأذكار ---
+    const azkarData = {
+      sabah: [
+        { text: "أصبحنا وأصبح الملك لله، والحمد لله ولا إله إلا الله وحده لا شريك له.", count: 1 },
+        { text: "آية الكرسي: {اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ...}", count: 1 },
+        { text: "سبحان الله وبحمده: عدد خلقه، ورضا نفسه، وزنة عرشه، ومداد كلماته.", count: 3 },
+        { text: "اللهم بك أصبحنا وبك أمسينا وبك نحيا وبك نموت وإليك النشور.", count: 1 }
       ],
-      vouchers: JSON.parse(localStorage.getItem('pro_vouchers')) || [],
-      templates: JSON.parse(localStorage.getItem('pro_templates')) || {
-        receipt: "تم استلام مبلغ {amount} ر.ي من الأخ {name}.\nالبيان: {note}\nرصيدكم المتبقي: {balance} ر.ي بتاريخ {date}.\nمحلات الدشيمي للتجارة العامة.",
-        payment: "تم تقييد مبلغ {amount} ر.ي لحساب الأخ {name}.\nالبيان: {note}\nتاريخ الاستحقاق: {dueDate}\nرصيدكم الحالي: {balance} ر.ي بتاريخ {date}.\nمحلات الدشيمي للتجارة العامة.",
-        reminder: "الأخ {name}، نود تذكيركم بضرورة سداد المبلغ المستحق عليكم برصيد: {balance} ر.ي.\nتاريخ الاستحقاق كان: {dueDate}\nمحلات الدشيمي للتجارة العامة."
-      },
-      store: JSON.parse(localStorage.getItem('pro_store')) || {
-        name: "محلات الدشيمي للتجارة العامة",
-        subtitle: "كشف حساب مالي بالريال اليمني",
-        logo: "",
-        pin: "1234"
-      },
-      theme: localStorage.getItem('pro_theme') || 'dark'
+      misa: [
+        { text: "أمسينا وأمسى الملك لله، والحمد لله ولا إله إلا الله وحده لا شريك له.", count: 1 },
+        { text: "آية الكرسي: {اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ...}", count: 1 },
+        { text: "أعوذ بكلمات الله التامات من شر ما خلق.", count: 3 },
+        { text: "اللهم بك أمسينا وبك أصبحنا وبك نحيا وبك نموت وإليك المصير.", count: 1 }
+      ]
     };
 
-    // دالة تنسيق الأرقام بفواصل الآلاف
-    function formatCurrency(val) {
-      const num = parseFloat(val) || 0;
-      return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+    let userLat = null;
+    let userLng = null;
+    let qiblaBearing = 0;
 
-    function authenticate() {
-      const pin = prompt('يرجى إدخال رمز الأمان لإتمام العملية:');
-      if (pin === (db.store.pin || "1234")) return true;
-      alert('رمز الأمان غير صحيح!');
-      return false;
-    }
+    // --- 1. أوقات الصلاة بناءً على الموقع ---
+    function getPrayerTimes() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          userLat = position.coords.latitude;
+          userLng = position.coords.longitude;
+          document.getElementById('location-status').innerText = "تم تحديد موقعك بنجاح.";
 
-    function applyTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      const icon = document.getElementById('theme-icon');
-      const text = document.getElementById('theme-text');
-      if (theme === 'light') {
-        icon.innerText = '☀️';
-        text.innerText = 'الوضع الفاتح';
-      } else {
-        icon.innerText = '🌙';
-        text.innerText = 'الوضع الداكن';
-      }
-      localStorage.setItem('pro_theme', theme);
-      db.theme = theme;
-    }
+          // حساب اتجاه القبلة من الموقع
+          calculateQibla(userLat, userLng);
 
-    function toggleTheme() {
-      const newTheme = db.theme === 'dark' ? 'light' : 'dark';
-      applyTheme(newTheme);
-    }
-
-    function saveData() {
-      localStorage.setItem('pro_clients', JSON.stringify(db.clients));
-      localStorage.setItem('pro_vouchers', JSON.stringify(db.vouchers));
-      localStorage.setItem('pro_templates', JSON.stringify(db.templates));
-      localStorage.setItem('pro_store', JSON.stringify(db.store));
-      refreshUI();
-    }
-
-    function showTab(tabId) {
-      ['home', 'clients', 'vouchers', 'overdue', 'reports', 'templates', 'settings'].forEach(t => {
-        document.getElementById('tab-' + t).classList.add('hidden');
-        document.getElementById('btn-' + t).classList.remove('active');
-      });
-      document.getElementById('tab-' + tabId).classList.remove('hidden');
-      document.getElementById('btn-' + tabId).classList.add('active');
-    }
-
-    function toggleDueDateField() {
-      const type = document.getElementById('voucher-type').value;
-      const container = document.getElementById('due-date-container');
-      if (type === 'payment') {
-        container.classList.remove('hidden');
-      } else {
-        container.classList.add('hidden');
-      }
-    }
-
-    function handleLogoUpload(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        db.store.logo = evt.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    function saveStoreSettings() {
-      db.store.name = document.getElementById('setting-store-name').value || "محلات الدشيمي للتجارة العامة";
-      db.store.subtitle = document.getElementById('setting-subtitle').value || "";
-      db.store.pin = document.getElementById('setting-pin').value || "1234";
-      saveData();
-      alert('تم حفظ بيانات الهوية والأمان بنجاح!');
-    }
-
-    function loadStoreSettings() {
-      document.getElementById('setting-store-name').value = db.store.name;
-      document.getElementById('setting-subtitle').value = db.store.subtitle;
-      document.getElementById('setting-pin').value = db.store.pin || "1234";
-      document.getElementById('header-store-name').innerText = db.store.name;
-      document.getElementById('header-subtitle').innerText = db.store.subtitle;
-      document.getElementById('print-store-name').innerText = db.store.name;
-      document.getElementById('print-subtitle').innerText = db.store.subtitle;
-
-      if (db.store.logo) {
-        document.getElementById('header-logo').src = db.store.logo;
-        document.getElementById('header-logo').style.display = 'block';
-        document.getElementById('print-logo').src = db.store.logo;
-      }
-    }
-
-    function loadTemplates() {
-      document.getElementById('tpl-receipt').value = db.templates.receipt;
-      document.getElementById('tpl-payment').value = db.templates.payment;
-      document.getElementById('tpl-reminder').value = db.templates.reminder;
-    }
-
-    function saveTemplates() {
-      db.templates.receipt = document.getElementById('tpl-receipt').value;
-      db.templates.payment = document.getElementById('tpl-payment').value;
-      db.templates.reminder = document.getElementById('tpl-reminder').value;
-      saveData();
-      alert('تم حفظ القوالب بنجاح!');
-    }
-
-    function saveClient() {
-      const id = document.getElementById('edit-client-id').value;
-      const name = document.getElementById('new-client-name').value.trim();
-      const phone = document.getElementById('new-client-phone').value.trim();
-
-      if (!name) return alert('يرجى كتابة اسم العميل');
-
-      const exists = db.clients.find(c => c.name.toLowerCase() === name.toLowerCase() && c.id !== id);
-      if (exists) return alert('يوجد عميل مسجل بهذا الاسم مسبقاً!');
-
-      if (id) {
-        if (!authenticate()) return;
-        const client = db.clients.find(c => c.id === id);
-        client.name = name;
-        client.phone = phone;
-      } else {
-        db.clients.push({ id: Date.now().toString(), name, phone, balance: 0, dueDate: '' });
-      }
-
-      resetClientForm();
-      saveData();
-    }
-
-    function editClient(id) {
-      const client = db.clients.find(c => c.id === id);
-      document.getElementById('edit-client-id').value = client.id;
-      document.getElementById('new-client-name').value = client.name;
-      document.getElementById('new-client-phone').value = client.phone;
-      document.getElementById('form-client-title').innerText = 'تعديل بيانات العميل';
-      document.getElementById('btn-save-client').innerText = 'تحديث البيانات';
-    }
-
-    function resetClientForm() {
-      document.getElementById('edit-client-id').value = '';
-      document.getElementById('new-client-name').value = '';
-      document.getElementById('new-client-phone').value = '';
-      document.getElementById('form-client-title').innerText = 'إضافة عميل جديد';
-      document.getElementById('btn-save-client').innerText = 'حفظ العميل';
-    }
-
-    function deleteClient(id) {
-      if (!authenticate()) return;
-      if (confirm('هل أنت تأكد من إزالة هذا العميل؟')) {
-        db.clients = db.clients.filter(c => c.id !== id);
-        saveData();
-      }
-    }
-
-    function createVoucherForClient(clientId) {
-      showTab('vouchers');
-      resetVoucherForm();
-      document.getElementById('voucher-client-id').value = clientId;
-      updateSelectedClientBalance();
-    }
-
-    function filterVoucherClients() {
-      const query = document.getElementById('voucher-client-search').value.toLowerCase();
-      const select = document.getElementById('voucher-client-id');
-      select.innerHTML = '<option value="">اختر العميل...</option>';
-      db.clients.filter(c => c.name.toLowerCase().includes(query)).forEach(c => {
-        select.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-      });
-      updateSelectedClientBalance();
-    }
-
-    function updateSelectedClientBalance() {
-      const clientId = document.getElementById('voucher-client-id').value;
-      const box = document.getElementById('live-balance-box');
-      const val = document.getElementById('live-balance-val');
-
-      if (!clientId) {
-        box.classList.add('hidden');
-        return;
-      }
-
-      const client = db.clients.find(c => c.id === clientId);
-      if (client) {
-        const label = client.balance > 0 ? 'عليه (لك)' : client.balance < 0 ? 'له (عليك)' : 'خالي';
-        val.innerText = `${formatCurrency(Math.abs(client.balance))} ر.ي (${label})`;
-        box.classList.remove('hidden');
-      } else {
-        box.classList.add('hidden');
-      }
-    }
-
-    function saveVoucher() {
-      const id = document.getElementById('edit-voucher-id').value;
-      const clientId = document.getElementById('voucher-client-id').value;
-      const type = document.getElementById('voucher-type').value;
-      const amount = parseFloat(document.getElementById('voucher-amount').value);
-      const note = document.getElementById('voucher-note').value || 'بدون بيان';
-      const dueDate = document.getElementById('voucher-due-date').value || '';
-
-      if (!clientId || isNaN(amount) || amount <= 0) return alert('يرجى تحديد العميل وإدخال مبلغ صحيح');
-
-      const client = db.clients.find(c => c.id === clientId);
-      let newVoucherId;
-
-      if (id) {
-        if (!authenticate()) return;
-        const oldV = db.vouchers.find(v => v.id === id);
-        const oldClient = db.clients.find(c => c.id === oldV.clientId);
-        if (oldV.type === 'receipt') oldClient.balance += oldV.amount;
-        else oldClient.balance -= oldV.amount;
-
-        oldV.clientId = clientId;
-        oldV.clientName = client.name;
-        oldV.type = type;
-        oldV.amount = amount;
-        oldV.note = note;
-        oldV.dueDate = dueDate;
-
-        if (type === 'receipt') client.balance -= amount;
-        else {
-          client.balance += amount;
-          if (dueDate) client.dueDate = dueDate;
-        }
-        newVoucherId = id;
-      } else {
-        if (type === 'receipt') client.balance -= amount;
-        else {
-          client.balance += amount;
-          if (dueDate) client.dueDate = dueDate;
-        }
-
-        newVoucherId = Date.now().toString();
-        const today = new Date().toISOString().split('T')[0];
-        db.vouchers.unshift({
-          id: newVoucherId,
-          clientId,
-          clientName: client.name,
-          type,
-          amount,
-          note,
-          dueDate,
-          sent: false,
-          date: today
+          // جلب أوقات الصلاة من API Aladhan
+          fetch(`https://api.aladhan.com/v1/timings?latitude=${userLat}&longitude=${userLng}&method=4`)
+            .then(res => res.json())
+            .then(data => {
+              const timings = data.data.timings;
+              for (let prayer in timings) {
+                if (document.getElementById(prayer)) {
+                  document.getElementById(prayer).innerText = timings[prayer];
+                }
+              }
+            });
+        }, () => {
+          document.getElementById('location-status').innerText = "تعذر الحصول على الموقع. يتم عرض أوقات الافتراضية.";
         });
       }
-
-      saveData();
-      sendVoucherWA(newVoucherId);
-      resetVoucherForm();
     }
 
-    function editVoucher(id) {
-      const v = db.vouchers.find(v => v.id === id);
-      document.getElementById('edit-voucher-id').value = v.id;
-      document.getElementById('voucher-client-id').value = v.clientId;
-      document.getElementById('voucher-type').value = v.type;
-      document.getElementById('voucher-amount').value = v.amount;
-      document.getElementById('voucher-note').value = v.note;
-      document.getElementById('voucher-due-date').value = v.dueDate || '';
+    // --- 2. عرض الأذكار ---
+    function showAzkar(type) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
 
-      updateSelectedClientBalance();
-      toggleDueDateField();
-      document.getElementById('form-voucher-title').innerText = 'تعديل السند';
-      document.getElementById('btn-save-voucher').innerText = 'تحديث السند وإعادة الإرسال';
+      const container = document.getElementById('azkar-list');
+      container.innerHTML = '';
+
+      azkarData[type].forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'azkar-item';
+        div.innerHTML = `
+          <div class="azkar-text">${item.text}</div>
+          <button class="counter-btn" id="btn-${type}-${index}" onclick="countDown(this, ${item.count})">
+            العدد: ${item.count}
+          </button>
+        `;
+        container.appendChild(div);
+      });
     }
 
-    function resetVoucherForm() {
-      document.getElementById('edit-voucher-id').value = '';
-      document.getElementById('voucher-amount').value = '';
-      document.getElementById('voucher-note').value = '';
-      document.getElementById('voucher-due-date').value = '';
-      document.getElementById('voucher-client-search').value = '';
-      filterVoucherClients();
-      updateSelectedClientBalance();
-      toggleDueDateField();
-      document.getElementById('form-voucher-title').innerText = 'إصدار سند جديد';
-      document.getElementById('btn-save-voucher').innerText = 'تسجيل السند وإرسال واتساب فوراً';
-    }
-
-    function deleteVoucher(id) {
-      if (!authenticate()) return;
-      if (confirm('هل أنت تأكد من حذف هذا السند؟')) {
-        const v = db.vouchers.find(v => v.id === id);
-        const client = db.clients.find(c => c.id === v.clientId);
-        if (client) {
-          if (v.type === 'receipt') client.balance += v.amount;
-          else client.balance -= v.amount;
-        }
-        db.vouchers = db.vouchers.filter(v => v.id !== id);
-        saveData();
+    function countDown(btn, max) {
+      let current = parseInt(btn.getAttribute('data-current') || max);
+      if (current > 0) {
+        current--;
+        btn.setAttribute('data-current', current);
+        btn.innerText = current > 0 ? `العدد: ${current}` : "تم ✔";
+        if (current === 0) btn.style.background = "#2b9348";
       }
     }
 
-    function sendVoucherWA(voucherId) {
-      const v = db.vouchers.find(item => item.id === voucherId);
-      const client = db.clients.find(c => c.id === v.clientId);
-
-      if (!client || !client.phone) return alert('تم حفظ السند، ولكن لم يتم الإرسال لعدم وجود رقم هاتف!');
-
-      let tpl = v.type === 'receipt' ? db.templates.receipt : db.templates.payment;
+    // --- 3. حساب واتجاه القبلة والبوصلة ---
+    function calculateQibla(lat, lng) {
+      const makkahLat = 21.4225;
+      const makkahLng = 39.8262;
       
-      let msg = tpl
-        .replace(/{name}/g, client.name)
-        .replace(/{amount}/g, formatCurrency(v.amount))
-        .replace(/{note}/g, v.note || 'بدون بيان')
-        .replace(/{dueDate}/g, v.dueDate || 'غير محدد')
-        .replace(/{balance}/g, formatCurrency(Math.abs(client.balance)))
-        .replace(/{date}/g, v.date);
+      const phiK = makkahLat * Math.PI / 180;
+      const lambdaK = makkahLng * Math.PI / 180;
+      const phi = lat * Math.PI / 180;
+      const lambda = lng * Math.PI / 180;
 
-      v.sent = true;
-      saveData();
-
-      window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    function sendReminderWA(clientId) {
-      const client = db.clients.find(c => c.id === clientId);
-      if (!client || !client.phone) return alert('يرجى التأكد من تسجيل رقم الهاتف للعميل أولاً!');
-
-      let msg = db.templates.reminder
-        .replace(/{name}/g, client.name)
-        .replace(/{balance}/g, formatCurrency(Math.abs(client.balance)))
-        .replace(/{dueDate}/g, client.dueDate || 'غير محدد');
-
-      window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-    function sendFullStatementWA(clientId) {
-      const client = db.clients.find(c => c.id === clientId);
-      if (!client || !client.phone) return alert('يرجى التأكد من تسجيل رقم الهاتف للعميل أولاً!');
-
-      const clientVouchers = db.vouchers.filter(v => v.clientId === clientId).reverse();
-      let statementText = `📋 *كشف حساب مالي - ${db.store.name}*\n`;
-      statementText += `العميل: *${client.name}*\n`;
-      statementText += `--------------------------------\n`;
-
-      if (clientVouchers.length === 0) {
-        statementText += `لا توجد حركات مسجلة سابقاً.\n`;
-      } else {
-        let runningBalance = 0;
-        clientVouchers.forEach((v, idx) => {
-          if (v.type === 'payment') runningBalance += v.amount;
-          else runningBalance -= v.amount;
-
-          const typeStr = v.type === 'receipt' ? 'قبض (+)' : 'صرف (-)';
-          const balLabel = runningBalance > 0 ? 'عليه' : runningBalance < 0 ? 'له' : 'متعادل';
-          statementText += `${idx + 1}. [${v.date}] ${typeStr}: ${formatCurrency(v.amount)} ر.ي | ${v.note} | الرصيد: ${formatCurrency(Math.abs(runningBalance))} (${balLabel})\n`;
-        });
-      }
-
-      const label = client.balance > 0 ? 'عليكم (دَين)' : client.balance < 0 ? 'لكم' : 'متعادل';
-      statementText += `--------------------------------\n`;
-      statementText += `*الرصيد النهائي الحالي:* ${formatCurrency(Math.abs(client.balance))} ر.ي (${label})\n`;
-      if (client.dueDate) statementText += `تاريخ الاستحقاق: ${client.dueDate}\n`;
-      statementText += `\nشكراً لتعاملكم معنا!`;
-
-      window.open(`https://wa.me/${client.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(statementText)}`, '_blank');
-    }
-
-    function generateDailyReport() {
-      const selectedDate = document.getElementById('report-daily-date').value;
-      if (!selectedDate) return alert('يرجى تحديد التاريخ لملاحظة الحركة اليومية');
-
-      const dailyVouchers = db.vouchers.filter(v => v.date === selectedDate);
-      const output = document.getElementById('daily-report-output');
-
-      let receiptsTotal = 0;
-      let paymentsTotal = 0;
-
-      let rows = '';
-      dailyVouchers.forEach(v => {
-        if (v.type === 'receipt') receiptsTotal += v.amount;
-        else paymentsTotal += v.amount;
-
-        rows += `
-          <tr>
-            <td>${v.clientName}</td>
-            <td style="color:${v.type==='receipt'?'#52b788':'#ff8fa3'}">${v.type==='receipt'?'قبض':'صرف'}</td>
-            <td>${v.note}</td>
-            <td>${formatCurrency(v.amount)} ر.ي</td>
-          </tr>`;
-      });
-
-      output.innerHTML = `
-        <div class="grid-2" style="margin-top:10px;">
-          <div style="background:var(--th-bg); padding:8px; border-radius:5px;">إجمالي المقبوضات: <strong style="color:#52b788;">${formatCurrency(receiptsTotal)} ر.ي</strong></div>
-          <div style="background:var(--th-bg); padding:8px; border-radius:5px;">إجمالي المصروفات: <strong style="color:#ff8fa3;">${formatCurrency(paymentsTotal)} ر.ي</strong></div>
-        </div>
-        <table>
-          <thead><tr><th>العميل</th><th>النوع</th><th>البيان</th><th>المبلغ</th></tr></thead>
-          <tbody>${rows || '<tr><td colspan="4">لا توجد حركات مسجلة لهذا اليوم</td></tr>'}</tbody>
-        </table>
-        <br>
-        <button class="btn btn-sm" onclick="window.print()">🖨️ طباعة تقرير اليوم</button>
-      `;
-    }
-
-    function openClientStatement(clientId) {
-      const client = db.clients.find(c => c.id === clientId);
-      if (!client) return;
-
-      document.getElementById('modal-client-name').innerText = client.name;
-      document.getElementById('modal-client-phone').innerText = client.phone ? `رقم الهاتف: ${client.phone}` : 'بدون رقم هاتف';
-      document.getElementById('modal-client-balance').innerText = `الرصيد الحالي: ${formatCurrency(Math.abs(client.balance))} ر.ي (${client.balance > 0 ? 'عليه' : 'له'})`;
-
-      const tbody = document.getElementById('modal-vouchers-body');
-      tbody.innerHTML = '';
-
-      const clientVouchers = db.vouchers.filter(v => v.clientId === clientId).reverse();
-      
-      if (clientVouchers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5">لا توجد حركات مسجلة لهذا الحساب</td></tr>';
-      } else {
-        let runningBalance = 0;
-        clientVouchers.forEach(v => {
-          if (v.type === 'payment') {
-            runningBalance += v.amount;
-          } else {
-            runningBalance -= v.amount;
-          }
-
-          const balLabel = runningBalance > 0 ? 'عليه' : runningBalance < 0 ? 'له' : 'متعادل';
-
-          tbody.innerHTML += `
-            <tr>
-              <td>${v.date}</td>
-              <td style="color:${v.type==='receipt'?'#52b788':'#ff8fa3'}">${v.type==='receipt'?'قبض':'صرف'}</td>
-              <td>${v.note || '-'}</td>
-              <td>${formatCurrency(v.amount)} ر.ي</td>
-              <td style="font-weight:bold;">${formatCurrency(Math.abs(runningBalance))} ر.ي (${balLabel})</td>
-            </tr>`;
-        });
-      }
-
-      document.getElementById('modal-wa-btn').onclick = () => sendFullStatementWA(client.id);
-      document.getElementById('statement-modal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-      document.getElementById('statement-modal').classList.add('hidden');
-    }
-
-    function refreshUI() {
-      let debit = 0, credit = 0;
-      db.clients.forEach(c => {
-        if (c.balance > 0) debit += c.balance;
-        else credit += Math.abs(c.balance);
-      });
-      document.getElementById('total-debit').innerText = formatCurrency(debit) + ' ر.ي';
-      document.getElementById('total-credit').innerText = formatCurrency(credit) + ' ر.ي';
-      document.getElementById('net-total').innerText = formatCurrency(debit - credit) + ' ر.ي';
-
-      filterVoucherClients();
-
-      const selectReport = document.getElementById('report-client-select');
-      selectReport.innerHTML = '<option value="">اختر العميل...</option>';
-
-      db.clients.forEach(c => {
-        selectReport.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-      });
-
-      renderClients();
-      renderVouchers();
-      renderOverdue();
-      renderAllClientsReport();
-      loadTemplates();
-      loadStoreSettings();
-      applyTheme(db.theme);
-
-      document.getElementById('report-daily-date').value = new Date().toISOString().split('T')[0];
-    }
-
-    function renderClients() {
-      const container = document.getElementById('clients-list');
-      const search = document.getElementById('client-search').value.toLowerCase();
-      const sort = document.getElementById('client-filter-sort').value;
-
-      container.innerHTML = '';
-
-      let filtered = db.clients.filter(c => c.name.toLowerCase().includes(search) || c.phone.includes(search));
-
-      if (sort === 'debit') filtered = filtered.filter(c => c.balance > 0);
-      else if (sort === 'credit') filtered = filtered.filter(c => c.balance < 0);
-      else if (sort === 'amount-desc') filtered.sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance));
-
-      filtered.forEach(c => {
-        const typeClass = c.balance > 0 ? 'debit' : c.balance < 0 ? 'credit' : '';
-        const label = c.balance > 0 ? 'عليه' : c.balance < 0 ? 'له' : 'خالي';
-
-        container.innerHTML += `
-          <div class="item-card ${typeClass}">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div onclick="openClientStatement('${c.id}')" style="cursor:pointer;">
-                <strong style="color:#48cae4;">👁️ ${c.name}</strong>
-                <small style="display:block; color:var(--text-muted);">${c.phone || 'بدون رقم'}</small>
-                ${c.dueDate ? `<small style="display:block; color:#ff8fa3;">📅 موعد السداد: ${c.dueDate}</small>` : ''}
-              </div>
-              <span class="badge ${c.balance > 0 ? 'bg-blue' : 'bg-green'}">${formatCurrency(Math.abs(c.balance))} ر.ي (${label})</span>
-            </div>
-            <div style="margin-top:10px; display:flex; gap:5px; justify-content:flex-end; flex-wrap:wrap;">
-              <button class="btn btn-sm" style="background:#00b4d8;" onclick="createVoucherForClient('${c.id}')">➕ سند</button>
-              <button class="btn btn-sm btn-wa" onclick="sendFullStatementWA('${c.id}')">📊 كشف حساب واتساب</button>
-              <button class="btn btn-sm" onclick="editClient('${c.id}')">✏️ تعديل</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteClient('${c.id}')">🗑️</button>
-            </div>
-          </div>`;
-      });
-    }
-
-    function renderOverdue() {
-      const container = document.getElementById('overdue-list');
-      const search = document.getElementById('overdue-search').value.toLowerCase();
-      const sort = document.getElementById('overdue-filter-sort').value;
-      const today = new Date().toISOString().split('T')[0];
-
-      container.innerHTML = '';
-
-      let overdueClients = db.clients.filter(c => c.balance > 0 && c.dueDate && c.dueDate <= today && c.name.toLowerCase().includes(search));
-
-      if (sort === 'amount') overdueClients.sort((a, b) => b.balance - a.balance);
-      else overdueClients.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-
-      if (overdueClients.length === 0) {
-        container.innerHTML = '<p style="font-size:13px; color:var(--text-muted);">لا يوجد عملاء متأخرين عن السداد حالياً.</p>';
-        return;
-      }
-
-      overdueClients.forEach(c => {
-        container.innerHTML += `
-          <div class="item-card overdue">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-              <div>
-                <strong style="color:#ff8fa3;">⚠️ ${c.name}</strong>
-                <small style="display:block; color:var(--text-muted);">${c.phone || 'بدون رقم'}</small>
-                <small style="display:block; color:#e53e3e; font-weight:bold;">تاريخ الاستحقاق المتأخر: ${c.dueDate}</small>
-              </div>
-              <span class="badge bg-red">${formatCurrency(c.balance)} ر.ي</span>
-            </div>
-            <div style="margin-top:10px; display:flex; gap:5px; justify-content:flex-end;">
-              <button class="btn btn-sm btn-wa" onclick="sendReminderWA('${c.id}')">📱 طلب السداد فوراً</button>
-            </div>
-          </div>`;
-      });
-    }
-
-    function renderVouchers() {
-      const container = document.getElementById('vouchers-list');
-      const recentContainer = document.getElementById('recent-vouchers-list');
-      const searchInput = document.getElementById('vouchers-search');
-      const search = searchInput ? searchInput.value.toLowerCase().trim() : '';
-
-      container.innerHTML = '';
-      recentContainer.innerHTML = '';
-
-      const filtered = db.vouchers.filter(v => 
-        v.clientName.toLowerCase().includes(search) || 
-        (v.note && v.note.toLowerCase().includes(search)) ||
-        v.amount.toString().includes(search)
+      const qibla = Math.atan2(
+        Math.sin(lambdaK - lambda),
+        Math.cos(phi) * Math.tan(phiK) - Math.sin(phi) * Math.cos(lambdaK - lambda)
       );
 
-      filtered.forEach((v, index) => {
-        const sentBadge = v.sent ? '<span style="color:#52b788; font-size:10px;">✓ تم الإرسال</span>' : '<span style="color:#ff8fa3; font-size:10px;">✕ لم يرسل</span>';
-
-        const html = `
-          <div class="item-card">
-            <div style="display:flex; justify-content:space-between;">
-              <div>
-                <strong>${v.clientName}</strong> - <small>${v.note || 'بدون بيان'}</small>
-                <small style="display:block; color:var(--text-muted);">${v.date} ${v.dueDate ? '| سداد: '+v.dueDate : ''} | ${sentBadge}</small>
-              </div>
-              <div>
-                <span class="badge ${v.type==='receipt'?'bg-green':'bg-red'}">${v.type==='receipt'?'+':'-'} ${formatCurrency(v.amount)} ر.ي</span>
-              </div>
-            </div>
-            <div style="margin-top:8px; display:flex; gap:5px; justify-content:flex-end;">
-              <button class="btn btn-sm btn-wa" onclick="sendVoucherWA('${v.id}')">📱 ${v.sent ? 'إعادة إرسال' : 'إرسال واتساب'}</button>
-              <button class="btn btn-sm" onclick="editVoucher('${v.id}')">✏️ تعديل</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteVoucher('${v.id}')">🗑️ حذف</button>
-            </div>
-          </div>`;
-        container.innerHTML += html;
-        if (index < 5) recentContainer.innerHTML += html;
-      });
+      qiblaBearing = (qibla * 180 / Math.PI + 360) % 360;
+      document.getElementById('qibla-degree').innerText = `زاية القبلة: ${Math.round(qiblaBearing)}° من الشمال`;
     }
 
-    function renderAllClientsReport() {
-      const container = document.getElementById('all-clients-report');
-      let html = '<table><thead><tr><th>العميل</th><th>الرقم</th><th>موعد السداد</th><th>الرصيد النهائي</th></tr></thead><tbody>';
-      db.clients.forEach(c => {
-        const label = c.balance > 0 ? 'عليه' : c.balance < 0 ? 'له' : 'خالي';
-        html += `<tr><td>${c.name}</td><td>${c.phone || '-'}</td><td>${c.dueDate || '-'}</td><td>${formatCurrency(Math.abs(c.balance))} ر.ي (${label})</td></tr>`;
-      });
-      html += '</tbody></table>';
-      container.innerHTML = html;
-    }
-
-    function exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-      const dlAnchorElem = document.createElement('a');
-      dlAnchorElem.setAttribute("href", dataStr);
-      dlAnchorElem.setAttribute("download", "SohaibPro_Backup.json");
-      dlAnchorElem.click();
-    }
-
-    async function shareData() {
-      const jsonStr = JSON.stringify(db, null, 2);
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const file = new File([blob], 'SohaibPro_Backup.json', { type: 'application/json' });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            title: 'نسخة احتياطية - Sohaib Pro',
-            text: 'إليك النسخة الاحتياطية الخاصة بتطبيق Sohaib Pro',
-            files: [file]
-          });
-        } catch (err) {
-          if (err.name !== 'AbortError') alert('حدث خطأ أثناء المشاركة!');
-        }
+    function initCompass() {
+      if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', function(event) {
+          let alpha = event.alpha; // الاتجاه نحو الشمال
+          if (alpha !== null) {
+            // تدوير المؤشر نحو القبلة
+            let pointerDegree = qiblaBearing - alpha;
+            document.getElementById('compass-pointer').style.transform = `rotate(${pointerDegree}deg)`;
+          }
+        }, true);
       } else {
-        alert('واجهة المشاركة المباشرة غير مدعومة في هذا المتصفح. تم تنزيل الملف بدلاً من ذلك.');
-        exportData();
+        alert("المستشعر غير مدعوم في جهازك.");
       }
     }
 
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const importedDB = JSON.parse(e.target.result);
-          if (importedDB.clients && importedDB.vouchers) {
-            db = importedDB;
-            saveData();
-            alert('تمت استعادة البيانات بنجاح!');
-          } else {
-            alert('ملف غير صالح!');
+    // --- 4. الإشعارات التلقائية ---
+    function requestNotification() {
+      if ("Notification" in window) {
+        Notification.requestPermission().then(permission => {
+          if (permission === "granted") {
+            alert("تم تفعيل الإشعارات بنجاح!");
+            scheduleNotification();
           }
-        } catch (err) {
-          alert('خطأ في قراءة الملف!');
-        }
-      };
-      reader.readAsText(file);
+        });
+      }
     }
 
-    refreshUI();
-  </script>
-
-  <!-- كود تسجيل Service Worker لتفعيل PWA بالكامل -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("./sw.js")
-          .then(function (registration) {
-            console.log("Sohaib Pro PWA جاهز، نطاق العمل:", registration.scope);
-          })
-          .catch(function (error) {
-            console.error("فشل تسجيل التطبيق:", error);
-          });
-      });
+    function scheduleNotification() {
+      // إرسال إشعار تجريبي بعد تفعيل التذكير
+      setTimeout(() => {
+        new Notification("تذكير الأذكار", {
+          body: "لا تنسَ قراءة أذكار اليوم والدعاء!",
+          icon: "https://cdn-icons-png.flaticon.com/512/2913/2913008.png"
+        });
+      }, 5000); // إشعار تجريبي بعد 5 ثوانٍ
     }
+
+    // التشغيل الأولي عند تحميل الصفحة
+    window.onload = () => {
+      getPrayerTimes();
+      showAzkar('sabah');
+    };
   </script>
 </body>
 </html>
