@@ -1,11 +1,11 @@
 {
-  "name": "تطبيق الأذكار الشامل",
-  "short_name": "الأذكار",
-  "description": "تطبيق شامل للأذكار والأدعية ومواقيت الصلاة واتجاه القبلة",
+  "name": "تطبيق الأذكار والقبلة الشامل",
+  "short_name": "الأذكار Pro",
+  "description": "تطبيق شامل للأذكار، التسبيح، أوقات الصلاة، اتجاه القبلة والقرآن الكريم",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0f392b",
-  "theme_color": "#0f392b",
+  "background_color": "#0a261c",
+  "theme_color": "#0a261c",
   "orientation": "portrait",
   "icons": [
     {
